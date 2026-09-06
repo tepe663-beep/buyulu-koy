@@ -3,154 +3,216 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Şirinler Sesli Sohbet</title>
+  <title>Şirinler Köyü Canlı Sohbet</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      background: linear-gradient(135deg, #74b9ff, #a29bfe);
+      /* 1. Gönderdiğiniz Görsel Arka Plan Olarak Ayarlandı */
+      background: url('https://i.postimg.cc/kX4L7Xyq/smurfs-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
+      width: 100vw;
       overflow: hidden;
-      padding: 20px;
+      position: relative;
     }
 
-    /* Durum Bilgisi ve Mikrofon Simgesi */
-    .top-bar {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-    }
-
-    .mic-status {
-      width: 60px;
-      height: 60px;
+    /* Üst Mikrofon Durum İkonu */
+    .mic-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
-      background: #2ed573;
+      background: #00a8ff;
       border: 4px solid #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 28px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
+      font-size: 32px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      z-index: 100;
+      transition: all 0.3s;
     }
-
-    .mic-status.off {
-      background: #ff4757;
+    .mic-indicator.listening {
+      background: #44bd32;
+      animation: pulse 1s infinite;
     }
-
-    .mic-status.listening {
-      animation: pulse 1.2s infinite;
-    }
-
     @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
-      70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(46, 213, 115, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
 
     /* Konuşma Balonu */
-    .chat-container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .chat-bubble {
-      background: #ffffff;
+    .speech-bubble {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
       border: 5px solid #00a8ff;
-      border-radius: 35px;
-      padding: 25px 35px;
+      border-radius: 30px;
+      padding: 20px 30px;
+      max-width: 80%;
+      width: 500px;
       text-align: center;
       font-size: 24px;
       font-weight: bold;
       color: #2f3542;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      position: relative;
-      min-height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 90;
     }
 
-    /* Karakter İsim Paneli (Alt Kısım) */
-    .character-bar {
+    /* 2. Sahne ve Öne Çıkan Karakter Alanı */
+    .stage {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.3);
-      padding: 15px;
-      border-radius: 25px;
-      backdrop-filter: blur(8px);
-      flex-wrap: wrap;
       justify-content: center;
+      align-items: flex-end;
+      width: 100%;
+      height: 60vh;
+      pointer-events: none;
     }
 
-    .char-card {
-      background: white;
+    .character-avatar {
+      max-height: 80%;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      opacity: 0;
+      transform: scale(0.5);
+      position: absolute;
+    }
+
+    /* Aktif Karakter Öne Fırlar ve Büyür */
+    .character-avatar.active {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    /* Gargamel & Azman Birlikte Çıktığında */
+    .duo-container {
+      display: flex;
+      align-items: flex-end;
+      gap: -20px;
+    }
+
+    /* Alt Karakter Seçim İkonları */
+    .bottom-bar {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      background: rgba(0, 0, 0, 0.4);
       padding: 10px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      color: #0097e6;
-      border: 3px solid #00a8ff;
-      font-size: 18px;
-      transition: all 0.3s ease;
+      border-radius: 40px;
+      backdrop-filter: blur(5px);
+      z-index: 100;
     }
 
-    .char-card.active {
-      background: #e1b12c;
-      color: white;
+    .char-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .char-btn.active {
       border-color: #fbc531;
-      transform: scale(1.1);
+      transform: scale(1.2);
     }
   </style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <div style="font-size: 20px; font-weight: bold; color: white;">Şirinler Köyü</div>
-    <div class="mic-status listening" id="micIndicator" title="Mikrofon Durumu">🎤</div>
+  <div class="mic-indicator listening" id="micBtn">🎤</div>
+
+  <div class="speech-bubble" id="bubble">
+    Bana "Şirin Baba", "Şirine", "Gargamel" veya "Gözlüklü" de!
   </div>
 
-  <div class="chat-container">
-    <div class="chat-bubble" id="speechBubble">
-      Dinliyorum... İsmiyle bir karakter çağırabilirsin! (Örn: Şirin Baba)
+  <!-- ÖNE ÇIKAN KARAKTER SAHNESİ -->
+  <div class="stage">
+    <img id="img-sirin-baba" class="character-avatar active" src="https://i.postimg.cc/png-sirin-baba.png" alt="Şirin Baba" />
+    <img id="img-sirine" class="character-avatar" src="https://i.postimg.cc/png-sirine.png" alt="Şirine" />
+    <img id="img-gozluklu" class="character-avatar" src="https://i.postimg.cc/png-gozluklu.png" alt="Gözlüklü Şirin" />
+    
+    <!-- Gargamel ve Azman Birlikte -->
+    <div id="img-gargamel-azman" class="character-avatar duo-container">
+      <img src="https://i.postimg.cc/png-gargamel.png" style="height: 350px;" />
+      <img src="https://i.postimg.cc/png-azman.png" style="height: 180px; margin-left: -40px;" />
     </div>
   </div>
 
-  <div class="character-bar">
-    <div class="char-card active" id="card-Şirin Baba">Şirin Baba</div>
-    <div class="char-card" id="card-Şirine">Şirine</div>
-    <div class="char-card" id="card-Gargamel">Gargamel</div>
-    <div class="char-card" id="card-Azman">Azman</div>
-    <div class="char-card" id="card-Gözlüklü Şirin">Gözlüklü</div>
+  <!-- Alt Butonlar -->
+  <div class="bottom-bar">
+    <div class="char-btn active" onclick="switchCharacter('Şirin Baba')">👴</div>
+    <div class="char-btn" onclick="switchCharacter('Şirine')">👩</div>
+    <div class="char-btn" onclick="switchCharacter('Gargamel ve Azman')">🧙‍♂️</div>
+    <div class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')">🤓</div>
   </div>
 
   <script>
-    let activeCharacter = "Şirin Baba";
+    let activeChar = "Şirin Baba";
     let isSpeaking = false;
 
-    const bubble = document.getElementById('speechBubble');
-    const micIndicator = document.getElementById('micIndicator');
+    const bubble = document.getElementById('bubble');
+    const micBtn = document.getElementById('micBtn');
 
-    const characters = {
-      "şirin baba": "Şirin Baba",
-      "şirine": "Şirine",
-      "gargamel": "Gargamel",
-      "azman": "Azman",
-      "gözlüklü": "Gözlüklü Şirin",
-      "gözlüklü şirin": "Gözlüklü Şirin"
+    // KARAKTER SES VE KİŞİLİK AYARLARI
+    const charSettings = {
+      "Şirin Baba": {
+        elementId: "img-sirin-baba",
+        pitch: 0.7, // Tok, yaşlı erkek sesi
+        rate: 0.8,  // Yavaş ve babacan
+        welcome: "Merhaba küçük dostum! Ben Şirin Baba."
+      },
+      "Şirine": {
+        elementId: "img-sirine",
+        pitch: 1.6, // İnce, neşeli kadın/kız sesi
+        rate: 0.9,
+        welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!"
+      },
+      "Gargamel ve Azman": {
+        elementId: "img-gargamel-azman",
+        pitch: 0.5, // Kaba ve kıkırdayan ses
+        rate: 0.95,
+        welcome: "Hahaha! Ben Gargamel, bu da Azman! Yakaladım seni!"
+      },
+      "Gözlüklü Şirin": {
+        elementId: "img-gozluklu",
+        pitch: 1.3, // Bilgiç, hafif ince ses
+        rate: 1.0,
+        welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!"
+      }
     };
 
-    // Ses Tanıma (Web Speech API)
+    // KARAKTER DEĞİŞTİRME MANTIĞI (Görseli Öne Çıkarır)
+    function switchCharacter(name) {
+      activeChar = name;
+      
+      // Tüm görselleri gizle
+      document.querySelectorAll('.character-avatar').forEach(el => el.classList.remove('active'));
+
+      // Seçilen karakteri öne getir (Büyüt)
+      const activeData = charSettings[name];
+      if(activeData) {
+        document.getElementById(activeData.elementId).classList.add('active');
+        bubble.innerText = activeData.welcome;
+        speakText(activeData.welcome);
+      }
+    }
+
+    // SES TANIMA (Mikrofon Daima Açık)
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -158,75 +220,46 @@
       recognition = new Recognition();
       recognition.lang = 'tr-TR';
       recognition.continuous = true;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        micIndicator.classList.remove('off');
-        micIndicator.classList.add('listening');
-      };
 
       recognition.onend = () => {
-        micIndicator.classList.remove('listening');
-        micIndicator.classList.add('off');
-        // Karakter konuşmuyorsa mikrofonu hemen tekrar aç
         if (!isSpeaking) {
-          try { recognition.start(); } catch (e) {}
+          try { recognition.start(); } catch(e){}
         }
       };
 
-      recognition.onresult = async (event) => {
-        const lastIndex = event.results.length - 1;
-        const userSpeech = event.results[lastIndex][0].transcript.trim().toLowerCase();
+      recognition.onresult = async (e) => {
+        const text = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
+        
+        // Sesle Karakter Çağırma Kontrolü
+        if (text.includes("şirin baba")) { switchCharacter("Şirin Baba"); return; }
+        if (text.includes("şirine")) { switchCharacter("Şirine"); return; }
+        if (text.includes("gargamel") || text.includes("azman")) { switchCharacter("Gargamel ve Azman"); return; }
+        if (text.includes("gözlüklü")) { switchCharacter("Gözlüklü Şirin"); return; }
 
-        // 1. Karakter Çağrıldı mı Kontrol Et
-        let foundCharacter = null;
-        for (let key in characters) {
-          if (userSpeech.includes(key)) {
-            foundCharacter = characters[key];
-            break;
-          }
-        }
-
-        if (foundCharacter) {
-          activeCharacter = foundCharacter;
-          updateActiveCard(activeCharacter);
-          speakText(`Efendim küçük dostum, ben ${activeCharacter}!`);
-          return;
-        }
-
-        // 2. Normal Sohbet Yanıtı
-        if (userSpeech.length > 1) {
-          bubble.innerText = `Seni duydum: "${userSpeech}"`;
-          await processAIResponse(userSpeech);
+        // Normal Konuşma
+        if (text.length > 1) {
+          bubble.innerText = `"${text}"`;
+          await processResponse(text);
         }
       };
 
-      // Sayfa açılır açılmaz dinlemeyi başlat
-      window.onload = () => {
-        try { recognition.start(); } catch(e) {}
-      };
-    } else {
-      bubble.innerText = "Tarayıcınız ses tanımayı desteklemiyor. Lütfen Chrome kullanın.";
+      window.onload = () => { try { recognition.start(); } catch(e){} };
     }
 
-    function updateActiveCard(charName) {
-      document.querySelectorAll('.char-card').forEach(card => card.classList.remove('active'));
-      const activeCard = document.getElementById(`card-${charName}`);
-      if (activeCard) activeCard.classList.add('active');
-    }
-
-    async function processAIResponse(userInput) {
+    async function processResponse(userInput) {
       stopListening();
-      bubble.innerText = `${activeCharacter} düşünüyor...`;
+      
+      // Örnek AI Yanıtı (Kendi API'nizi bağlayabilirsiniz)
+      let aiText = `${activeChar}: Seni duyabiliyorum küçük dostum!`;
+      if(activeChar === "Gargamel ve Azman") {
+        aiText = "Gargamel: Yakalayacağım seni! Azman: Miyavvv!";
+      }
 
-      // Buraya yapay zeka API isteğinizi ekleyebilirsiniz.
-      // Şimdilik örnek yanıt dönmektedir:
-      const responseText = `${activeCharacter}: Çok haklısın küçük dostum, seni dinliyorum!`;
-
-      bubble.innerText = responseText;
-      speakText(responseText);
+      bubble.innerText = aiText;
+      speakText(aiText);
     }
 
+    // KARAKTERE ÖZGÜ SES TONU İLE KONUŞMA (TTS)
     function speakText(text) {
       isSpeaking = true;
       stopListening();
@@ -234,14 +267,15 @@
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'tr-TR';
-      utterance.rate = 0.85; // Çocuklar için biraz yavaş konuşma
+
+      // Aktif Karakterin Ses Frekansını (Pitch) Uygula
+      const currentConfig = charSettings[activeChar];
+      if (currentConfig) {
+        utterance.pitch = currentConfig.pitch; // Ses inceliği / kalınlığı
+        utterance.rate = currentConfig.rate;   // Konuşma hızı
+      }
 
       utterance.onend = () => {
-        isSpeaking = false;
-        startListening();
-      };
-
-      utterance.onerror = () => {
         isSpeaking = false;
         startListening();
       };
@@ -249,17 +283,8 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    function stopListening() {
-      if (recognition) {
-        try { recognition.stop(); } catch(e) {}
-      }
-    }
-
-    function startListening() {
-      if (recognition && !isSpeaking) {
-        try { recognition.start(); } catch(e) {}
-      }
-    }
+    function stopListening() { if(recognition) try{ recognition.stop(); }catch(e){} }
+    function startListening() { if(recognition && !isSpeaking) try{ recognition.start(); }catch(e){} }
   </script>
 </body>
 </html>
