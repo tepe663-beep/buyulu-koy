@@ -1,102 +1,265 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Şirinler Sesli Sohbet</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+      background: linear-gradient(135deg, #74b9ff, #a29bfe);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+      padding: 20px;
+    }
 
-    <title>Büyülü Köy</title>
+    /* Durum Bilgisi ve Mikrofon Simgesi */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
 
-    <link rel="stylesheet" href="style.css">
+    .mic-status {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #2ed573;
+      border: 4px solid #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .mic-status.off {
+      background: #ff4757;
+    }
+
+    .mic-status.listening {
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(46, 213, 115, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+    }
+
+    /* Konuşma Balonu */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .chat-bubble {
+      background: #ffffff;
+      border: 5px solid #00a8ff;
+      border-radius: 35px;
+      padding: 25px 35px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #2f3542;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      position: relative;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Karakter İsim Paneli (Alt Kısım) */
+    .character-bar {
+      display: flex;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 25px;
+      backdrop-filter: blur(8px);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .char-card {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #0097e6;
+      border: 3px solid #00a8ff;
+      font-size: 18px;
+      transition: all 0.3s ease;
+    }
+
+    .char-card.active {
+      background: #e1b12c;
+      color: white;
+      border-color: #fbc531;
+      transform: scale(1.1);
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="app">
+  <div class="top-bar">
+    <div style="font-size: 20px; font-weight: bold; color: white;">Şirinler Köyü</div>
+    <div class="mic-status listening" id="micIndicator" title="Mikrofon Durumu">🎤</div>
+  </div>
 
-    <header>
-        <h1>🌳 Büyülü Köy 🌳</h1>
-
-        <div id="status">
-            Hazırım 😊
-        </div>
-    </header>
-
-
-    <main>
-
-        <div class="character">
-
-            <img
-                id="characterImage"
-                src="images/sirinbaba.png"
-                alt="Karakter"
-            >
-
-            <div id="emojiCharacter">
-                🧙‍♂️
-            </div>
-
-            <h2 id="characterName">
-                Şirin Baba
-            </h2>
-
-            <<div id="speech">
-    Merhaba küçük dostum! 👋
-</div>
-
-<div id="heardText">
-    Burada söylediklerin görünecek...
-</div>
-
-<button id="micButton" onclick="startListening()">
-    🎤 Konuşmaya Başla
-</button>
-    </main>
-
-
-    <div class="characters">
-
-        <button onclick="character('sirinbaba')">
-            🧙‍♂️
-            <span>Şirin Baba</span>
-        </button>
-<button onclick="testSes()">🔊 Ses Testi</button>
-
-        <button onclick="character('sirine')">
-            🌸
-            <span>Şirine</span>
-        </button>
-<button onclick="testSes()">🔊 Ses Testi</button>
-
-        <button onclick="character('gargamel')">
-            🧙
-            <span>Gargamel</span>
-        </button>
-<button onclick="testSes()">🔊 Ses Testi</button>
-
-        <button onclick="character('azman')">
-            🐱
-            <span>Azman</span>
-        </button>
-<button onclick="testSes()">🔊 Ses Testi</button>
-
-        <button onclick="character('gozluklu')">
-            👓
-            <span>Gözlüklü</span>
-        </button>
-<button onclick="testSes()">🔊 Ses Testi</button>
-
+  <div class="chat-container">
+    <div class="chat-bubble" id="speechBubble">
+      Dinliyorum... İsmiyle bir karakter çağırabilirsin! (Örn: Şirin Baba)
     </div>
+  </div>
 
+  <div class="character-bar">
+    <div class="char-card active" id="card-Şirin Baba">Şirin Baba</div>
+    <div class="char-card" id="card-Şirine">Şirine</div>
+    <div class="char-card" id="card-Gargamel">Gargamel</div>
+    <div class="char-card" id="card-Azman">Azman</div>
+    <div class="char-card" id="card-Gözlüklü Şirin">Gözlüklü</div>
+  </div>
 
-    <footer>
-        🎤 Yakında benimle konuşabileceksin...
-    </footer>
+  <script>
+    let activeCharacter = "Şirin Baba";
+    let isSpeaking = false;
 
-</div>
+    const bubble = document.getElementById('speechBubble');
+    const micIndicator = document.getElementById('micIndicator');
 
+    const characters = {
+      "şirin baba": "Şirin Baba",
+      "şirine": "Şirine",
+      "gargamel": "Gargamel",
+      "azman": "Azman",
+      "gözlüklü": "Gözlüklü Şirin",
+      "gözlüklü şirin": "Gözlüklü Şirin"
+    };
 
-<script src="app.js"></script>
+    // Ses Tanıma (Web Speech API)
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
 
+    if (Recognition) {
+      recognition = new Recognition();
+      recognition.lang = 'tr-TR';
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micIndicator.classList.remove('off');
+        micIndicator.classList.add('listening');
+      };
+
+      recognition.onend = () => {
+        micIndicator.classList.remove('listening');
+        micIndicator.classList.add('off');
+        // Karakter konuşmuyorsa mikrofonu hemen tekrar aç
+        if (!isSpeaking) {
+          try { recognition.start(); } catch (e) {}
+        }
+      };
+
+      recognition.onresult = async (event) => {
+        const lastIndex = event.results.length - 1;
+        const userSpeech = event.results[lastIndex][0].transcript.trim().toLowerCase();
+
+        // 1. Karakter Çağrıldı mı Kontrol Et
+        let foundCharacter = null;
+        for (let key in characters) {
+          if (userSpeech.includes(key)) {
+            foundCharacter = characters[key];
+            break;
+          }
+        }
+
+        if (foundCharacter) {
+          activeCharacter = foundCharacter;
+          updateActiveCard(activeCharacter);
+          speakText(`Efendim küçük dostum, ben ${activeCharacter}!`);
+          return;
+        }
+
+        // 2. Normal Sohbet Yanıtı
+        if (userSpeech.length > 1) {
+          bubble.innerText = `Seni duydum: "${userSpeech}"`;
+          await processAIResponse(userSpeech);
+        }
+      };
+
+      // Sayfa açılır açılmaz dinlemeyi başlat
+      window.onload = () => {
+        try { recognition.start(); } catch(e) {}
+      };
+    } else {
+      bubble.innerText = "Tarayıcınız ses tanımayı desteklemiyor. Lütfen Chrome kullanın.";
+    }
+
+    function updateActiveCard(charName) {
+      document.querySelectorAll('.char-card').forEach(card => card.classList.remove('active'));
+      const activeCard = document.getElementById(`card-${charName}`);
+      if (activeCard) activeCard.classList.add('active');
+    }
+
+    async function processAIResponse(userInput) {
+      stopListening();
+      bubble.innerText = `${activeCharacter} düşünüyor...`;
+
+      // Buraya yapay zeka API isteğinizi ekleyebilirsiniz.
+      // Şimdilik örnek yanıt dönmektedir:
+      const responseText = `${activeCharacter}: Çok haklısın küçük dostum, seni dinliyorum!`;
+
+      bubble.innerText = responseText;
+      speakText(responseText);
+    }
+
+    function speakText(text) {
+      isSpeaking = true;
+      stopListening();
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'tr-TR';
+      utterance.rate = 0.85; // Çocuklar için biraz yavaş konuşma
+
+      utterance.onend = () => {
+        isSpeaking = false;
+        startListening();
+      };
+
+      utterance.onerror = () => {
+        isSpeaking = false;
+        startListening();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopListening() {
+      if (recognition) {
+        try { recognition.stop(); } catch(e) {}
+      }
+    }
+
+    function startListening() {
+      if (recognition && !isSpeaking) {
+        try { recognition.start(); } catch(e) {}
+      }
+    }
+  </script>
 </body>
 </html>
