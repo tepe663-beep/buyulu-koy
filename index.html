@@ -9,7 +9,7 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* Arka plan görseliniz */
+      /* Düzenlenmiş konuşma balonsuz arka plan görseli */
       background: url('resim/background.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -47,42 +47,50 @@
       100% { transform: scale(1); }
     }
 
-    /* 
-      Alt Tıklama Alanı Kutusu:
-      Dairelerin tam üzerine oturması için alt mesafe ve genişlik milimetrik ayarlandı.
-    */
+    /* Alt Buton Konteyneri */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      justify-content: space-between;
-      width: 80%;
-      max-width: 880px;
+      justify-content: center;
+      gap: 20px;
+      width: 90%;
+      max-width: 900px;
       z-index: 100;
     }
 
-    /* 
-      Butonlar:
-      Dışarı taşmayı engellemek için overflow: hidden ve tam daire (border-radius: 50%) uygulandı.
-    */
+    /* Buton Yapısı ve Daire Sınırlama */
     .char-btn {
-      width: 90px;
-      height: 90px;
+      width: 85px;
+      height: 85px;
       border-radius: 50%;
-      border: 3px solid transparent;
-      background: transparent;
+      border: 3px solid #fff;
+      background: #fff;
       cursor: pointer;
-      overflow: hidden; /* Dışarı taşmayı engeller */
+      overflow: hidden; /* Küçük resimlerin dışarı taşmasını engeller */
       transition: all 0.2s ease-in-out;
       outline: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* Tıklanan karakterin etrafında içe doğru oturan sarı halka */
+    /* Buton İçindeki Küçük Karakter Resmi */
+    .char-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Resmi daireye tam oturtur ve orantısını bozmaz */
+      border-radius: 50%;
+    }
+
+    /* Tıklanan Buton Stili (Sarı Halka) */
     .char-btn.active {
       border-color: #fbc531;
-      box-shadow: inset 0 0 10px rgba(251, 197, 49, 0.8), 0 0 12px rgba(251, 197, 49, 0.8);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(251, 197, 49, 0.9);
     }
   </style>
 </head>
@@ -90,51 +98,37 @@
 
   <div class="mic-indicator listening" id="micBtn">🎤</div>
 
-  <!-- Arka Plandaki 5 Daireye Tam Oturan Şeffaf Butonlar -->
+  <!-- İçinde Küçük Karakter Görselleri Olan Butonlar -->
   <div class="bottom-bar">
-    <div class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba"></div>
-    <div class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine"></div>
-    <div class="char-btn" onclick="switchCharacter('Gargamel')" title="Gargamel"></div>
-    <div class="char-btn" onclick="switchCharacter('Azman')" title="Azman"></div>
-    <div class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin"></div>
+    <button class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba">
+      <img src="resim/sirin-baba.png" alt="Şirin Baba">
+    </button>
+    <button class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine">
+      <img src="resim/sirine.png" alt="Şirine">
+    </button>
+    <button class="char-btn" onclick="switchCharacter('Gargamel')" title="Gargamel">
+      <img src="resim/gargamel.png" alt="Gargamel">
+    </button>
+    <button class="char-btn" onclick="switchCharacter('Azman')" title="Azman">
+      <img src="resim/azman.png" alt="Azman">
+    </button>
+    <button class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin">
+      <img src="resim/gozluklu.png" alt="Gözlüklü Şirin">
+    </button>
   </div>
 
   <script>
     let activeChar = "Şirin Baba";
     let isSpeaking = false;
 
-    const micBtn = document.getElementById('micBtn');
-
-    // KARAKTER SES VE KİŞİLİK AYARLARI
     const charSettings = {
-      "Şirin Baba": {
-        pitch: 0.7, // Tok, yaşlı erkek sesi
-        rate: 0.8,  // Yavaş ve babacan
-        welcome: "Merhaba küçük dostum! Ben Şirin Baba."
-      },
-      "Şirine": {
-        pitch: 1.6, // İnce, neşeli kadın/kız sesi
-        rate: 0.9,
-        welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!"
-      },
-      "Gargamel": {
-        pitch: 0.5, // Kaba ve kıkırdayan ses
-        rate: 0.95,
-        welcome: "Hahaha! Ben Gargamel! Seni yakalayacağım Şirin!"
-      },
-      "Azman": {
-        pitch: 1.8, // Kedi sesi / yüksek frekans
-        rate: 1.1,
-        welcome: "Miyavvv! Ben Azman, Şirinleri avlamaya hazırım!"
-      },
-      "Gözlüklü Şirin": {
-        pitch: 1.3, // Bilgiç, hafif ince ses
-        rate: 1.0,
-        welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!"
-      }
+      "Şirin Baba": { pitch: 0.7, rate: 0.8, welcome: "Merhaba küçük dostum! Ben Şirin Baba." },
+      "Şirine": { pitch: 1.6, rate: 0.9, welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!" },
+      "Gargamel": { pitch: 0.5, rate: 0.95, welcome: "Hahaha! Ben Gargamel! Seni yakalayacağım Şirin!" },
+      "Azman": { pitch: 1.8, rate: 1.1, welcome: "Miyavvv! Ben Azman, Şirinleri avlamaya hazırım!" },
+      "Gözlüklü Şirin": { pitch: 1.3, rate: 1.0, welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!" }
     };
 
-    // KARAKTER DEĞİŞTİRME MANTIĞI
     function switchCharacter(name) {
       activeChar = name;
       
@@ -153,7 +147,6 @@
       }
     }
 
-    // SES TANIMA (Mikrofon Daima Açık)
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -171,14 +164,12 @@
       recognition.onresult = async (e) => {
         const text = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
         
-        // Sesle Karakter Çağırma Kontrolü
         if (text.includes("şirin baba")) { switchCharacter("Şirin Baba"); return; }
         if (text.includes("şirine")) { switchCharacter("Şirine"); return; }
         if (text.includes("gargamel")) { switchCharacter("Gargamel"); return; }
         if (text.includes("azman")) { switchCharacter("Azman"); return; }
         if (text.includes("gözlüklü")) { switchCharacter("Gözlüklü Şirin"); return; }
 
-        // Normal Konuşma
         if (text.length > 1) {
           await processResponse(text);
         }
@@ -200,7 +191,6 @@
       speakText(aiText);
     }
 
-    // KARAKTERE ÖZGÜ SES TONU İLE KONUŞMA (TTS)
     function speakText(text) {
       isSpeaking = true;
       stopListening();
