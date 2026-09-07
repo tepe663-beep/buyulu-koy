@@ -17,26 +17,39 @@
       position: relative;
     }
 
-    /* Üst Mikrofon Durum İkonu */
+    /* Üst Mikrofon Durum ve Tıklama İkonu */
     .mic-indicator {
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 70px;
-      height: 70px;
+      width: 75px;
+      height: 75px;
       border-radius: 50%;
       background: #00a8ff;
       border: 4px solid #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 32px;
+      font-size: 34px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       z-index: 200;
+      cursor: pointer; /* Tıklanabilir buton görünümü */
       transition: all 0.3s;
+      user-select: none;
     }
-    .mic-indicator.listening { background: #44bd32; animation: pulse 1s infinite; }
-    .mic-indicator.thinking { background: #fbc531; }
+    .mic-indicator:hover {
+      transform: scale(1.05);
+    }
+    .mic-indicator.listening { 
+      background: #44bd32; 
+      animation: pulse 1s infinite; 
+    }
+    .mic-indicator.thinking { 
+      background: #fbc531; 
+    }
+    .mic-indicator.stopped { 
+      background: #718093; 
+    }
 
     @keyframes pulse {
       0% { transform: scale(1); }
@@ -67,7 +80,7 @@
       cursor: pointer;
       overflow: hidden;
       transition: all 0.5s ease-in-out;
-      opacity: 0.5; /* Arkada kalanlar şeffaf */
+      opacity: 0.5;
       transform: scale(0.9);
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
@@ -82,7 +95,7 @@
     .char-btn.active {
       opacity: 1;
       border-color: #fbc531;
-      transform: scale(1.3) translateY(-15px); /* Öne gelir, büyür ve hafif yukarı kalkar */
+      transform: scale(1.3) translateY(-15px);
       box-shadow: 0 0 20px rgba(251, 197, 49, 0.9);
       z-index: 150;
     }
@@ -90,9 +103,10 @@
 </head>
 <body>
 
-  <div class="mic-indicator" id="micBtn">🎤</div>
+  <!-- Sağ Üst Mikrofon Butonu (Tıklanabilir) -->
+  <div class="mic-indicator stopped" id="micBtn" onclick="handleMicClick()" title="Dinlemeyi Başlat / Durdur">🎤</div>
 
-  <!-- Kendi klasörünüzden ses dosyası oynatıcı (İsteğe bağlı) -->
+  <!-- Ses dosyası oynatıcı -->
   <audio id="customAudioPlayer" style="display:none;"></audio>
 
   <div class="bottom-bar">
@@ -111,12 +125,12 @@
   </div>
 
   <script>
-    // 1. API ANAHTARINIZ EKLENDİ
     const GEMINI_API_KEY = "AQ.Ab8RN6KQxG7NimmTeLqgjpY3-GvCdEmX6_jowBWLDus2gpDyiw";
 
     let activeChar = "Şirin Baba";
     let isSpeaking = false;
     let isThinking = false;
+    let isListeningActive = false; // Mikrofonun aktif/pasif durumunu takip eder
     let availableVoices = [];
 
     const micBtn = document.getElementById('micBtn');
@@ -140,7 +154,7 @@
       "Gözlüklü Şirin": "Sadece Türkçe konuş. Asla başka bir dil kullanma. Sen Her şeyi bildiğini sanan Gözlüklü Şirin'sin. 'Şirin Baba her zaman der ki...' gibi ifadeler kullan. Bilgiç ama tatlı konuş. Kısa Türkçe cevap ver."
     };
 
-    // Karakter Değiştirme (Öne Çıkarma ve Arkada Bırakma)
+    // Karakter Değiştirme
     function switchCharacter(name) {
       activeChar = name;
       
@@ -200,6 +214,7 @@
         const data = await response.json();
         return data.candidates[0].content.parts[0].text;
       } catch (err) {
+        console.error("Gemini Hata:", err);
         return "Seni tam duyamadım küçük dostum, tekrar söyler misin?";
       } finally {
         isThinking = false;
@@ -213,16 +228,12 @@
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'tr-TR';
 
-      // Yüklü Türkçe sesi bulup zorunlu olarak atıyoruz
       if (availableVoices.length === 0) {
         availableVoices = window.speechSynthesis.getVoices();
       }
       const turkishVoice = availableVoices.find(v => v.lang.includes('tr') || v.lang.includes('TR'));
-      if (turkishVoice) {
-        utterance.voice = turkishVoice;
-      }
+      if (turkishVoice) utterance.voice = turkishVoice;
 
-      // Karakter Tonlamaları
       if (activeChar === "Şirin Baba") { utterance.pitch = 0.8; utterance.rate = 0.9; }
       else if (activeChar === "Şirine") { utterance.pitch = 1.4; utterance.rate = 1.0; }
       else if (activeChar === "Gargamel") { utterance.pitch = 0.6; utterance.rate = 1.1; }
@@ -233,12 +244,12 @@
 
       utterance.onend = () => {
         isSpeaking = false;
-        startListening();
+        if (isListeningActive) startListening();
       };
 
       utterance.onerror = () => {
         isSpeaking = false;
-        startListening();
+        if (isListeningActive) startListening();
       };
 
       window.speechSynthesis.speak(utterance);
@@ -251,42 +262,84 @@
     if (Recognition) {
       recognition = new Recognition();
       recognition.lang = 'tr-TR';
-      recognition.continuous = true;
+      recognition.continuous = false; // Tek elden dinleme döngüsü için false daha stabildir
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        micBtn.className = "mic-indicator listening";
+      };
 
       recognition.onend = () => {
-        if (!isSpeaking && !isThinking) {
+        // Eğer dinleme modu aktif tutulmak isteniyorsa ve konuşma/düşünme aşamasında değilsek otomatik devam et
+        if (isListeningActive && !isSpeaking && !isThinking) {
           try { recognition.start(); } catch(e){}
+        } else if (!isThinking && !isSpeaking) {
+          micBtn.className = "mic-indicator stopped";
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.log("Mikrofon durumu:", e.error);
+        if (e.error === 'not-allowed') {
+          isListeningActive = false;
+          micBtn.className = "mic-indicator stopped";
+          alert("Lütfen tarayıcınızın mikrofon iznini onaylayın.");
         }
       };
 
       recognition.onresult = async (e) => {
-        const text = e.results[e.results.length - 1][0].transcript.trim();
+        const text = e.results[0][0].transcript.trim();
+        console.log("Duyulan ses:", text);
         if(!text) return;
 
-        // 1. Önce sesli komutla karakter çağrıldı mı kontrol et
         const characterChanged = checkVoiceCharacterSwitch(text);
 
-        // 2. Karakter değişmediyse aktif karakter Türkçe cevap versin
         if (!characterChanged) {
           const aiResponse = await getAIResponse(text);
           speakText(aiResponse);
         }
       };
-
-      window.onload = () => { startListening(); };
+    } else {
+      alert("Tarayıcınız ses tanımayı desteklemiyor. Lütfen Google Chrome veya Edge kullanın.");
     }
 
     function stopListening() { 
-      micBtn.className = "mic-indicator";
       if(recognition) try{ recognition.stop(); }catch(e){} 
     }
     
     function startListening() { 
       if(recognition && !isSpeaking && !isThinking) {
-        micBtn.className = "mic-indicator listening";
-        try{ recognition.start(); }catch(e){} 
+        try { 
+          recognition.start(); 
+        } catch(e) {
+          // Zaten başladıysa durdurup tekrar dener
+          recognition.stop();
+          setTimeout(() => { try{ recognition.start(); }catch(err){} }, 100);
+        } 
       }
     }
+
+    // SAĞ ÜSTTEKİ MİKROFONA TIKLANDIĞINDA ÇALIŞACAK FONKSİYON
+    function handleMicClick() {
+      if (isSpeaking || isThinking) return;
+
+      if (isListeningActive) {
+        // Dinlemeyi kapat
+        isListeningActive = false;
+        stopListening();
+        micBtn.className = "mic-indicator stopped";
+      } else {
+        // Dinlemeyi başlat
+        isListeningActive = true;
+        startListening();
+      }
+    }
+
+    // Sayfa Yüklendiğinde Otomatik Başlatmayı Dene
+    window.onload = () => { 
+      isListeningActive = true;
+      startListening(); 
+    };
   </script>
 </body>
 </html>
