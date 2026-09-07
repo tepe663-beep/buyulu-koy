@@ -44,44 +44,52 @@
       100% { transform: scale(1); }
     }
 
-    /* BÜYÜK KARAKTERLERİN SAHNESİ (SAHNE ORTASI) */
+    /* SAHNE DÜZENİ VE POZİSYONLAR */
     .character-stage {
       position: absolute;
-      bottom: 110px; /* Alt butonların hemen üstünde durur */
+      bottom: 110px;
       left: 50%;
       transform: translateX(-50%);
+      width: 90vw;
+      height: 70vh;
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 15px;
-      width: 100%;
-      height: 70vh;
       z-index: 10;
     }
 
-    /* Arka Plandaki Büyük Karakter Resimleri */
+    /* Tüm Karakter Görselleri Ortak Stil */
     .big-char {
-      height: 45vh;
-      max-width: 20vw;
+      position: absolute;
+      bottom: 0;
+      height: 48vh;
+      max-width: 22vw;
       object-fit: contain;
       cursor: pointer;
-      transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-      opacity: 0.35; /* Arkada kalanlar şeffaf ve geride */
-      filter: grayscale(40%) blur(1px);
-      transform: scale(0.8);
+      transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      opacity: 0.4;
+      filter: grayscale(40%) brightness(0.8);
       z-index: 10;
     }
 
-    /* Çağrılan / Öne Çıkan Büyük Karakter */
+    /* Karakter Pozisyonları (Varsayılan Düzen) */
+    .pos-far-left { left: 5%; transform: scale(0.8); }
+    .pos-left     { left: 25%; transform: scale(0.85); }
+    .pos-right    { right: 25%; transform: scale(0.85); }
+    .pos-far-right{ right: 5%; transform: scale(0.8); }
+
+    /* MERKEZDEKİ / ÖNE GELEN KARAKTER */
     .big-char.active {
-      height: 65vh; /* Öne gelen karakter büyür */
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) scale(1.2) translateY(-10px) !important;
+      height: 65vh;
       opacity: 1;
-      filter: grayscale(0%) blur(0px) drop-shadow(0 10px 25px rgba(255, 255, 255, 0.8));
-      transform: scale(1.15) translateY(-15px); /* Öne doğru yaklaşır */
-      z-index: 100; /* Diğer büyük görsellerin üzerine çıkar */
+      filter: grayscale(0%) brightness(1) drop-shadow(0 10px 25px rgba(255, 255, 255, 0.9));
+      z-index: 100; /* Diğerlerinin önünde yer alır */
     }
 
-    /* ALTTAKİ KÜÇÜK BUTONLAR (ESKİ HALİ) */
+    /* ALTTAKİ KÜÇÜK BUTONLAR */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
@@ -94,7 +102,6 @@
       z-index: 200;
     }
 
-    /* Dairesel Butonlar */
     .char-btn {
       width: 80px;
       height: 80px;
@@ -126,15 +133,16 @@
 
   <div class="mic-indicator" id="micBtn">🎤</div>
 
-  <!-- BÜYÜK KARAKTER GÖRSELLERİ (ÖNE / ARKAYA GEÇENLER) -->
+  <!-- BÜYÜK KARAKTER GÖRSELLERİ -->
   <div class="character-stage">
+    <!-- Varsayılan olarak Şirin Baba Merkezde (active) -->
     <img src="resim/sirinbaba.png" alt="Şirin Baba" class="big-char active" id="char-sirinbaba" onclick="switchCharacter('Şirin Baba')">
-    <img src="resim/sirine.png" alt="Şirine" class="big-char" id="char-sirine" onclick="switchCharacter('Şirine')">
-    <img src="resim/gargamel.png" alt="Gargamel" class="big-char" id="char-gargamel" onclick="switchCharacter('Gargamel')">
-    <img src="resim/gozluklu.png" alt="Gözlüklü Şirin" class="big-char" id="char-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')">
+    <img src="resim/sirine.png" alt="Şirine" class="big-char pos-far-left" id="char-sirine" onclick="switchCharacter('Şirine')">
+    <img src="resim/gargamel.png" alt="Gargamel" class="big-char pos-far-right" id="char-gargamel" onclick="switchCharacter('Gargamel')">
+    <img src="resim/gozluklu.png" alt="Gözlüklü Şirin" class="big-char pos-right" id="char-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')">
   </div>
 
-  <!-- ESKİ KÜÇÜK BUTONLAR -->
+  <!-- ALT KÜÇÜK BUTONLAR -->
   <div class="bottom-bar">
     <button class="char-btn active" id="btn-sirinbaba" onclick="switchCharacter('Şirin Baba')">
       <img src="resim/sirinbababuton.png" alt="Şirin Baba">
@@ -151,7 +159,6 @@
   </div>
 
   <script>
-    // API KEY'İNİZİ BURAYA YAPIŞTIRIN
     const GEMINI_API_KEY = "BURAYA_GEMINI_API_KEYINIZI_YAPIŞTIRIN";
 
     let activeChar = "Şirin Baba";
@@ -160,6 +167,14 @@
 
     const micBtn = document.getElementById('micBtn');
 
+    // Her karakterin öne geçmediği anlarda sahnedeki duracağı yer sınıfı
+    const defaultPositions = {
+      "Şirin Baba": "pos-left",
+      "Şirine": "pos-far-left",
+      "Gargamel": "pos-far-right",
+      "Gözlüklü Şirin": "pos-right"
+    };
+
     const charPrompts = {
       "Şirin Baba": "Sen Şirinler köyünün bilge lideri Şirin Baba'sın. SADECE TÜRKÇE KONUŞ. Karşındaki küçük bir çocuk. Ona babacan, sevecen, eğitici ve tatlı bir dille cevap ver. Yanıtların 2-3 cümleyi geçmesin.",
       "Şirine": "Sen Şirinler köyündeki Şirine'sin. SADECE TÜRKÇE KONUŞ. Çok neşeli, tatlı, nazik ve enerjiksin. Yanıtların çocuksu ve neşeli Türkçe olsun. En fazla 2-3 cümle yaz.",
@@ -167,36 +182,51 @@
       "Gözlüklü Şirin": "Sen Her şeyi bildiğini sanan Gözlüklü Şirin'sin. SADECE TÜRKÇE KONUŞ. 'Şirin Baba her zaman der ki...' gibi ifadeler kullan. Bilgiç ama tatlı konuş. Kısa cevap ver."
     };
 
-    // Karakter Değiştirme (Hem Büyük Görseller Hem Küçük Butonlar Güncellenir)
+    // Karakter Yer Değiştirme Mantığı
     function switchCharacter(name) {
-      activeChar = name;
-      
-      // Tüm büyük görselleri ve küçük butonları sıfırla
-      document.querySelectorAll('.big-char').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.char-btn').forEach(el => el.classList.remove('active'));
+      if (activeChar === name) return;
 
-      // Seçilen karakterin BÜYÜK görselini öne çıkar ve KÜÇÜK butonunu aktif yap
-      if(name === 'Şirin Baba') {
-        document.getElementById('char-sirinbaba').classList.add('active');
-        document.getElementById('btn-sirinbaba').classList.add('active');
+      const prevChar = activeChar;
+      activeChar = name;
+
+      // 1. Önceki aktif karakteri sıradaki yan pozisyonuna kaydır
+      const prevEl = getCharElement(prevChar);
+      if (prevEl) {
+        prevEl.classList.remove('active');
+        prevEl.className = `big-char ${defaultPositions[prevChar]}`;
       }
-      if(name === 'Şirine') {
-        document.getElementById('char-sirine').classList.add('active');
-        document.getElementById('btn-sirine').classList.add('active');
+
+      // 2. Yeni çağrılan karakteri doğrudan MERKEZE getir (active)
+      const newEl = getCharElement(name);
+      if (newEl) {
+        newEl.className = 'big-char active';
       }
-      if(name === 'Gargamel') {
-        document.getElementById('char-gargamel').classList.add('active');
-        document.getElementById('btn-gargamel').classList.add('active');
-      }
-      if(name === 'Gözlüklü Şirin') {
-        document.getElementById('char-gozluklu').classList.add('active');
-        document.getElementById('btn-gozluklu').classList.add('active');
-      }
+
+      // 3. Alt küçük buton aktifliğini güncelle
+      document.querySelectorAll('.char-btn').forEach(el => el.classList.remove('active'));
+      const btnId = getBtnId(name);
+      if (btnId) document.getElementById(btnId).classList.add('active');
 
       speakText(`Merhaba! Ben ${activeChar}, seninle sohbet etmek için geldim!`);
     }
 
-    // Sesli Komutla Karakter Değişimi
+    function getCharElement(name) {
+      if (name === 'Şirin Baba') return document.getElementById('char-sirinbaba');
+      if (name === 'Şirine') return document.getElementById('char-sirine');
+      if (name === 'Gargamel') return document.getElementById('char-gargamel');
+      if (name === 'Gözlüklü Şirin') return document.getElementById('char-gozluklu');
+      return null;
+    }
+
+    function getBtnId(name) {
+      if (name === 'Şirin Baba') return 'btn-sirinbaba';
+      if (name === 'Şirine') return 'btn-sirine';
+      if (name === 'Gargamel') return 'btn-gargamel';
+      if (name === 'Gözlüklü Şirin') return 'btn-gozluklu';
+      return null;
+    }
+
+    // Sesli Komut Kontrolü
     function checkVoiceCharacterSwitch(userText) {
       const text = userText.toLowerCase();
 
@@ -219,7 +249,7 @@
       return false;
     }
 
-    // Gemini API Türkçe Yanıt
+    // Gemini API Yanıtı
     async function getAIResponse(userText) {
       micBtn.className = "mic-indicator thinking";
       isThinking = true;
@@ -247,7 +277,7 @@
       }
     }
 
-    // Türkçe Seslendirme Motoru
+    // Seslendirme
     function speakText(text) {
       window.speechSynthesis.cancel();
 
@@ -270,7 +300,7 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // Mikrofon Dinleme
+    // Ses Tanıma
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
