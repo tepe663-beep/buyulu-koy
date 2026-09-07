@@ -9,8 +9,8 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* Düzenlenmiş konuşma balonsuz arka plan görseli */
-      background: url('resim/background.png') no-repeat center center fixed;
+      /* Arka plan görseliniz: background1.png */
+      background: url('resim/background1.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
       width: 100vw;
@@ -47,7 +47,7 @@
       100% { transform: scale(1); }
     }
 
-    /* Alt Buton Konteyneri */
+    /* Alt Buton Kapsayıcısı */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
@@ -63,8 +63,8 @@
 
     /* Buton Yapısı ve Daire Sınırlama */
     .char-btn {
-      width: 85px;
-      height: 85px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       border: 3px solid #fff;
       background: #fff;
@@ -76,14 +76,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 0;
     }
 
     /* Buton İçindeki Küçük Karakter Resmi */
     .char-btn img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Resmi daireye tam oturtur ve orantısını bozmaz */
+      object-fit: cover; /* Daire içine tam sığdırır */
       border-radius: 50%;
+      display: block;
     }
 
     /* Tıklanan Buton Stili (Sarı Halka) */
@@ -101,19 +103,16 @@
   <!-- İçinde Küçük Karakter Görselleri Olan Butonlar -->
   <div class="bottom-bar">
     <button class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba">
-      <img src="resim/sirin-baba.png" alt="Şirin Baba">
+      <img src="resim/sirinbaba button.png" alt="Şirin Baba">
     </button>
     <button class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine">
-      <img src="resim/sirine.png" alt="Şirine">
+      <img src="resim/sirine buttun.png" alt="Şirine">
     </button>
     <button class="char-btn" onclick="switchCharacter('Gargamel')" title="Gargamel">
-      <img src="resim/gargamel.png" alt="Gargamel">
-    </button>
-    <button class="char-btn" onclick="switchCharacter('Azman')" title="Azman">
-      <img src="resim/azman.png" alt="Azman">
+      <img src="resim/gargamel button.png" alt="Gargamel">
     </button>
     <button class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin">
-      <img src="resim/gozluklu.png" alt="Gözlüklü Şirin">
+      <img src="resim/gozluklu button.png" alt="Gözlüklü Şirin">
     </button>
   </div>
 
@@ -125,7 +124,6 @@
       "Şirin Baba": { pitch: 0.7, rate: 0.8, welcome: "Merhaba küçük dostum! Ben Şirin Baba." },
       "Şirine": { pitch: 1.6, rate: 0.9, welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!" },
       "Gargamel": { pitch: 0.5, rate: 0.95, welcome: "Hahaha! Ben Gargamel! Seni yakalayacağım Şirin!" },
-      "Azman": { pitch: 1.8, rate: 1.1, welcome: "Miyavvv! Ben Azman, Şirinleri avlamaya hazırım!" },
       "Gözlüklü Şirin": { pitch: 1.3, rate: 1.0, welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!" }
     };
 
@@ -140,8 +138,7 @@
         if(name === 'Şirin Baba') buttons[0].classList.add('active');
         if(name === 'Şirine') buttons[1].classList.add('active');
         if(name === 'Gargamel') buttons[2].classList.add('active');
-        if(name === 'Azman') buttons[3].classList.add('active');
-        if(name === 'Gözlüklü Şirin') buttons[4].classList.add('active');
+        if(name === 'Gözlüklü Şirin') buttons[3].classList.add('active');
 
         speakText(activeData.welcome);
       }
@@ -167,7 +164,6 @@
         if (text.includes("şirin baba")) { switchCharacter("Şirin Baba"); return; }
         if (text.includes("şirine")) { switchCharacter("Şirine"); return; }
         if (text.includes("gargamel")) { switchCharacter("Gargamel"); return; }
-        if (text.includes("azman")) { switchCharacter("Azman"); return; }
         if (text.includes("gözlüklü")) { switchCharacter("Gözlüklü Şirin"); return; }
 
         if (text.length > 1) {
@@ -184,8 +180,6 @@
       let aiText = `${activeChar}: Seni duyabiliyorum küçük dostum!`;
       if(activeChar === "Gargamel") {
         aiText = "Gargamel: Yakalayacağım seni küçük Şirin!";
-      } else if(activeChar === "Azman") {
-        aiText = "Azman: Miyavvv! Şirinleri bana ver!";
       }
 
       speakText(aiText);
