@@ -48,37 +48,41 @@
     }
 
     /* 
-      Alt Tıklama Alanları:
-      Arka plandaki 5 dairenin (Şirin Baba, Şirine, Gargamel, Azman, Gözlüklü) 
-      üzerine tam oturacak şekilde şeffaf butonlar
+      Alt Tıklama Alanı Kutusu:
+      Dairelerin tam üzerine oturması için alt mesafe ve genişlik milimetrik ayarlandı.
     */
     .bottom-bar {
       position: absolute;
-      bottom: 25px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
       justify-content: space-between;
-      width: 82%; /* Arka plandaki dairelerin mesafesine göre ayarlandı */
-      max-width: 900px;
+      width: 80%;
+      max-width: 880px;
       z-index: 100;
     }
 
+    /* 
+      Butonlar:
+      Dışarı taşmayı engellemek için overflow: hidden ve tam daire (border-radius: 50%) uygulandı.
+    */
     .char-btn {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       border: 3px solid transparent;
       background: transparent;
       cursor: pointer;
-      transition: transform 0.2s, border-color 0.2s;
+      overflow: hidden; /* Dışarı taşmayı engeller */
+      transition: all 0.2s ease-in-out;
+      outline: none;
     }
 
-    /* Tıklanan karakterin etrafında sarı halka belirir */
+    /* Tıklanan karakterin etrafında içe doğru oturan sarı halka */
     .char-btn.active {
       border-color: #fbc531;
-      transform: scale(1.1);
-      box-shadow: 0 0 15px rgba(251, 197, 49, 0.8);
+      box-shadow: inset 0 0 10px rgba(251, 197, 49, 0.8), 0 0 12px rgba(251, 197, 49, 0.8);
     }
   </style>
 </head>
@@ -86,7 +90,7 @@
 
   <div class="mic-indicator listening" id="micBtn">🎤</div>
 
-  <!-- Alt Taraftaki Arka Plan Dairelerine Denk Gelen 5 Buton -->
+  <!-- Arka Plandaki 5 Daireye Tam Oturan Şeffaf Butonlar -->
   <div class="bottom-bar">
     <div class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba"></div>
     <div class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine"></div>
@@ -134,11 +138,9 @@
     function switchCharacter(name) {
       activeChar = name;
       
-      // Tüm butonların aktiflik çizgisini temizle
       const buttons = document.querySelectorAll('.char-btn');
       buttons.forEach(el => el.classList.remove('active'));
 
-      // Seçilen butona sarı halka ekle
       const activeData = charSettings[name];
       if(activeData) {
         if(name === 'Şirin Baba') buttons[0].classList.add('active');
