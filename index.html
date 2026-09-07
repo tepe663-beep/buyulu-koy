@@ -9,7 +9,7 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* GitHub'a yüklediğiniz yerel arka plan resmi bağlandı */
+      /* GitHub'a yüklediğiniz yerel arka plan resmi */
       background: url('resim/background.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -109,13 +109,14 @@
       transform: translateX(-50%);
       display: flex;
       gap: 15px;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.5);
       padding: 10px 20px;
       border-radius: 40px;
       backdrop-filter: blur(5px);
       z-index: 100;
     }
 
+    /* Karakter Butonlarının İçine Resim Oturtma */
     .char-btn {
       width: 70px;
       height: 70px;
@@ -123,13 +124,22 @@
       border: 3px solid #fff;
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, border-color 0.2s;
+      overflow: hidden;
     }
+
     .char-btn.active {
       border-color: #fbc531;
       transform: scale(1.2);
     }
+
+    /* Her Butona Karakter Görselini Bağlama */
+    .btn-sirin-baba { background-image: url('https://i.postimg.cc/png-sirin-baba.png'); }
+    .btn-sirine     { background-image: url('https://i.postimg.cc/png-sirine.png'); }
+    .btn-gargamel   { background-image: url('https://i.postimg.cc/png-gargamel.png'); }
+    .btn-gozluklu   { background-image: url('https://i.postimg.cc/png-gozluklu.png'); }
   </style>
 </head>
 <body>
@@ -153,12 +163,12 @@
     </div>
   </div>
 
-  <!-- Alt Butonlar -->
+  <!-- Alt Butonlar (Karakter Resimli) -->
   <div class="bottom-bar">
-    <div class="char-btn active" onclick="switchCharacter('Şirin Baba')">👴</div>
-    <div class="char-btn" onclick="switchCharacter('Şirine')">👩</div>
-    <div class="char-btn" onclick="switchCharacter('Gargamel ve Azman')">🧙‍♂️</div>
-    <div class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')">🤓</div>
+    <div class="char-btn btn-sirin-baba active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba"></div>
+    <div class="char-btn btn-sirine" onclick="switchCharacter('Şirine')" title="Şirine"></div>
+    <div class="char-btn btn-gargamel" onclick="switchCharacter('Gargamel ve Azman')" title="Gargamel ve Azman"></div>
+    <div class="char-btn btn-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin"></div>
   </div>
 
   <script>
@@ -196,17 +206,27 @@
       }
     };
 
-    // KARAKTER DEĞİŞTİRME MANTIĞI (Görseli Öne Çıkarır)
+    // KARAKTER DEĞİŞTİRME MANTIĞI (Görseli ve Buton Aktifliğini Ayarlar)
     function switchCharacter(name) {
       activeChar = name;
       
       // Tüm görselleri gizle
       document.querySelectorAll('.character-avatar').forEach(el => el.classList.remove('active'));
+      
+      // Tüm butonların aktiflik çizgisini kaldır
+      document.querySelectorAll('.char-btn').forEach(el => el.classList.remove('active'));
 
-      // Seçilen karakteri öne getir (Büyüt)
+      // Seçilen karakteri öne getir
       const activeData = charSettings[name];
       if(activeData) {
         document.getElementById(activeData.elementId).classList.add('active');
+        
+        // Tıklanan butonu sarı çerçeveli yap
+        if(name === 'Şirin Baba') document.querySelector('.btn-sirin-baba').classList.add('active');
+        if(name === 'Şirine') document.querySelector('.btn-sirine').classList.add('active');
+        if(name === 'Gargamel ve Azman') document.querySelector('.btn-gargamel').classList.add('active');
+        if(name === 'Gözlüklü Şirin') document.querySelector('.btn-gozluklu').classList.add('active');
+
         bubble.innerText = activeData.welcome;
         speakText(activeData.welcome);
       }
@@ -267,11 +287,10 @@
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'tr-TR';
 
-      // Aktif Karakterin Ses Frekansını (Pitch) Uygula
       const currentConfig = charSettings[activeChar];
       if (currentConfig) {
-        utterance.pitch = currentConfig.pitch; // Ses inceliği / kalınlığı
-        utterance.rate = currentConfig.rate;   // Konuşma hızı
+        utterance.pitch = currentConfig.pitch;
+        utterance.rate = currentConfig.rate;
       }
 
       utterance.onend = () => {
