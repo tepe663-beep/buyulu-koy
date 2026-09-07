@@ -9,7 +9,7 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* Arka plan görseliniz: background1.png */
+      /* Arka plan görseli */
       background: url('resim/background1.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -47,7 +47,7 @@
       100% { transform: scale(1); }
     }
 
-    /* Alt Buton Kapsayıcısı */
+    /* Alt Buton Hizalama Alanı */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
@@ -61,31 +61,30 @@
       z-index: 100;
     }
 
-    /* Buton Yapısı ve Daire Sınırlama */
+    /* Dairesel Butonlar */
     .char-btn {
       width: 90px;
       height: 90px;
       border-radius: 50%;
-      border: 3px solid #fff;
-      background: #fff;
+      border: 3px solid #ffffff;
+      background: #ffffff;
       cursor: pointer;
-      overflow: hidden; /* Küçük resimlerin dışarı taşmasını engeller */
+      overflow: hidden; /* Resmin dışa taşmasını önler */
       transition: all 0.2s ease-in-out;
       outline: none;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
       padding: 0;
+      display: block;
     }
 
-    /* Buton İçindeki Küçük Karakter Resmi */
+    /* Buton İçindeki Karakter Resimleri */
     .char-btn img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Daire içine tam sığdırır */
+      object-fit: cover; /* Resmi yuvarlak butonun içine sığdırır */
       border-radius: 50%;
       display: block;
+      pointer-events: none;
     }
 
     /* Tıklanan Buton Stili (Sarı Halka) */
@@ -100,19 +99,19 @@
 
   <div class="mic-indicator listening" id="micBtn">🎤</div>
 
-  <!-- İçinde Küçük Karakter Görselleri Olan Butonlar -->
+  <!-- Yeni Dosya İsimlerine Göre Butonlar -->
   <div class="bottom-bar">
     <button class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba">
-      <img src="resim/sirinbaba button.png" alt="Şirin Baba">
+      <img src="resim/sirinababbuton.png" alt="Şirin Baba">
     </button>
     <button class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine">
-      <img src="resim/sirine buttun.png" alt="Şirine">
+      <img src="resim/sirinebuton.png" alt="Şirine">
     </button>
     <button class="char-btn" onclick="switchCharacter('Gargamel')" title="Gargamel">
-      <img src="resim/gargamel button.png" alt="Gargamel">
+      <img src="resim/gargamelbuton.png" alt="Gargamel">
     </button>
     <button class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin">
-      <img src="resim/gozluklu button.png" alt="Gözlüklü Şirin">
+      <img src="resim/gozluklubuton.png" alt="Gözlüklü Şirin">
     </button>
   </div>
 
