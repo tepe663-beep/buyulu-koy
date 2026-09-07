@@ -9,7 +9,6 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* Arka plan görseli */
       background: url('resim/background1.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -18,7 +17,6 @@
       position: relative;
     }
 
-    /* Üst Mikrofon Durum İkonu */
     .mic-indicator {
       position: absolute;
       top: 20px;
@@ -47,7 +45,6 @@
       100% { transform: scale(1); }
     }
 
-    /* Alt Buton Hizalama Alanı */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
@@ -61,7 +58,6 @@
       z-index: 100;
     }
 
-    /* Dairesel Butonlar */
     .char-btn {
       width: 90px;
       height: 90px;
@@ -69,7 +65,7 @@
       border: 3px solid #ffffff;
       background: #ffffff;
       cursor: pointer;
-      overflow: hidden; /* Resmin dışa taşmasını önler */
+      overflow: hidden;
       transition: all 0.2s ease-in-out;
       outline: none;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -77,17 +73,15 @@
       display: block;
     }
 
-    /* Buton İçindeki Karakter Resimleri */
     .char-btn img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Resmi yuvarlak butonun içine sığdırır */
+      object-fit: cover;
       border-radius: 50%;
       display: block;
       pointer-events: none;
     }
 
-    /* Tıklanan Buton Stili (Sarı Halka) */
     .char-btn.active {
       border-color: #fbc531;
       transform: scale(1.1);
@@ -99,7 +93,9 @@
 
   <div class="mic-indicator listening" id="micBtn">🎤</div>
 
-  <!-- Güncellenmiş Dosya İsimlerine Göre Butonlar -->
+  <!-- Audio Oynatıcı (Gizli) -->
+  <audio id="audioPlayer" style="display:none;"></audio>
+
   <div class="bottom-bar">
     <button class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba">
       <img src="resim/sirinbababuton.png" alt="Şirin Baba">
@@ -119,11 +115,30 @@
     let activeChar = "Şirin Baba";
     let isSpeaking = false;
 
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    // KARAKTER VE SES DOSYASI EŞLEŞTİRMELERİ
     const charSettings = {
-      "Şirin Baba": { pitch: 0.7, rate: 0.8, welcome: "Merhaba küçük dostum! Ben Şirin Baba." },
-      "Şirine": { pitch: 1.6, rate: 0.9, welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!" },
-      "Gargamel": { pitch: 0.5, rate: 0.95, welcome: "Hahaha! Ben Gargamel! Seni yakalayacağım Şirin!" },
-      "Gözlüklü Şirin": { pitch: 1.3, rate: 1.0, welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!" }
+      "Şirin Baba": {
+        welcomeAudio: "audio/sirinbaba-karsilama.mp3",
+        masalAudio: "audio/sirinbaba-masal.mp3",
+        sarkiAudio: "audio/sirinbaba-sarki.mp3"
+      },
+      "Şirine": {
+        welcomeAudio: "audio/sirine-karsilama.mp3",
+        masalAudio: "audio/sirine-masal.mp3",
+        sarkiAudio: "audio/sirine-sarki.mp3"
+      },
+      "Gargamel": {
+        welcomeAudio: "audio/gargamel-karsilama.mp3",
+        masalAudio: "audio/gargamel-masal.mp3",
+        sarkiAudio: "audio/gargamel-sarki.mp3"
+      },
+      "Gözlüklü Şirin": {
+        welcomeAudio: "audio/gozluklu-karsilama.mp3",
+        masalAudio: "audio/gozluklu-masal.mp3",
+        sarkiAudio: "audio/gozluklu-sarki.mp3"
+      }
     };
 
     function switchCharacter(name) {
@@ -132,17 +147,35 @@
       const buttons = document.querySelectorAll('.char-btn');
       buttons.forEach(el => el.classList.remove('active'));
 
-      const activeData = charSettings[name];
-      if(activeData) {
-        if(name === 'Şirin Baba') buttons[0].classList.add('active');
-        if(name === 'Şirine') buttons[1].classList.add('active');
-        if(name === 'Gargamel') buttons[2].classList.add('active');
-        if(name === 'Gözlüklü Şirin') buttons[3].classList.add('active');
+      if(name === 'Şirin Baba') buttons[0].classList.add('active');
+      if(name === 'Şirine') buttons[1].classList.add('active');
+      if(name === 'Gargamel') buttons[2].classList.add('active');
+      if(name === 'Gözlüklü Şirin') buttons[3].classList.add('active');
 
-        speakText(activeData.welcome);
-      }
+      playAudio(charSettings[name].welcomeAudio);
     }
 
+    // SES DOSYASINI OYNATMA FONKSİYONU
+    function playAudio(filePath) {
+      if(!filePath) return;
+      
+      isSpeaking = true;
+      stopListening();
+
+      audioPlayer.src = filePath;
+      audioPlayer.play().catch(err => {
+        console.log("Ses oynatılamadı veya dosya bulunamadı:", err);
+        isSpeaking = false;
+        startListening();
+      });
+
+      audioPlayer.onended = () => {
+        isSpeaking = false;
+        startListening();
+      };
+    }
+
+    // SES TANIMA
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -157,53 +190,28 @@
         }
       };
 
-      recognition.onresult = async (e) => {
+      recognition.onresult = (e) => {
         const text = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
         
+        // Karakter Değiştirme Komutları
         if (text.includes("şirin baba")) { switchCharacter("Şirin Baba"); return; }
         if (text.includes("şirine")) { switchCharacter("Şirine"); return; }
         if (text.includes("gargamel")) { switchCharacter("Gargamel"); return; }
         if (text.includes("gözlüklü")) { switchCharacter("Gözlüklü Şirin"); return; }
 
-        if (text.length > 1) {
-          await processResponse(text);
+        // Masal ve Şarkı Komutları
+        if (text.includes("masal") || text.includes("hikaye")) {
+          playAudio(charSettings[activeChar].masalAudio);
+          return;
+        }
+        
+        if (text.includes("şarkı") || text.includes("müzik")) {
+          playAudio(charSettings[activeChar].sarkiAudio);
+          return;
         }
       };
 
       window.onload = () => { try { recognition.start(); } catch(e){} };
-    }
-
-    async function processResponse(userInput) {
-      stopListening();
-      
-      let aiText = `${activeChar}: Seni duyabiliyorum küçük dostum!`;
-      if(activeChar === "Gargamel") {
-        aiText = "Gargamel: Yakalayacağım seni küçük Şirin!";
-      }
-
-      speakText(aiText);
-    }
-
-    function speakText(text) {
-      isSpeaking = true;
-      stopListening();
-
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'tr-TR';
-
-      const currentConfig = charSettings[activeChar];
-      if (currentConfig) {
-        utterance.pitch = currentConfig.pitch;
-        utterance.rate = currentConfig.rate;
-      }
-
-      utterance.onend = () => {
-        isSpeaking = false;
-        startListening();
-      };
-
-      window.speechSynthesis.speak(utterance);
     }
 
     function stopListening() { if(recognition) try{ recognition.stop(); }catch(e){} }
