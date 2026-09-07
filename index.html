@@ -47,40 +47,61 @@
     /* SAHNE DÜZENİ */
     .character-stage {
       position: absolute;
-      bottom: 110px;
+      bottom: 80px;
       left: 0;
       width: 100vw;
-      height: 70vh;
+      height: 75vh;
       z-index: 10;
+      pointer-events: none;
     }
 
-    /* TÜM BÜYÜK KARAKTER GÖRSELLERİ */
+    /* BÜYÜK KARAKTER GÖRSELLERİ */
     .big-char {
       position: absolute;
-      bottom: 0;
-      height: 50vh;
-      max-width: 25vw;
+      bottom: 30px;
+      left: 50%;
+      height: 55vh;
+      max-width: 30vw;
       object-fit: contain;
       cursor: pointer;
-      /* Yer değiştirme hareketini sağlayan yumuşak geçiş */
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
+      pointer-events: auto;
+      
+      /* Yumuşak kayma animasyonu */
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                   opacity 0.8s ease, 
-                  filter 0.8s ease;
-      opacity: 0.4;
-      filter: grayscale(40%) brightness(0.8);
-      z-index: 10;
-      /* Görsellerin üzerinde fareyle basılı tutulduğunda yazı/mavi seçim çıkmaması için */
+                  filter 0.8s ease,
+                  z-index 0.2s ease;
+      
+      opacity: 0.65;
+      filter: brightness(0.85);
       user-select: none;
       -webkit-user-drag: none;
     }
 
-    /* 4 FARKLI POZİSYON KODU (Sol 2, Merkez, Sağ 1) */
-    .pos-far-left  { transform: translateX(5vw) scale(0.8); }
-    .pos-left      { transform: translateX(25vw) scale(0.85); }
-    .pos-center    { transform: translateX(40vw) scale(1.25); opacity: 1; filter: grayscale(0%) brightness(1) drop-shadow(0 10px 25px rgba(255, 255, 255, 0.9)); z-index: 100; }
-    .pos-right     { transform: translateX(70vw) scale(0.85); }
+    /* YER/POZİSYON SIFIRLAMALARI (4 Sabit Konum) */
+    .pos-far-left { 
+      transform: translateX(-170%) scale(0.75); 
+      z-index: 10; 
+      opacity: 0.6;
+    }
+    .pos-left { 
+      transform: translateX(-95%) scale(0.85); 
+      z-index: 20; 
+      opacity: 0.75;
+    }
+    .pos-center { 
+      transform: translateX(-50%) scale(1.25); 
+      opacity: 1; 
+      filter: brightness(1); 
+      z-index: 100; /* Öne çıkarma */
+    }
+    .pos-right { 
+      transform: translateX(25%) scale(0.85); 
+      z-index: 20; 
+      opacity: 0.75;
+    }
 
-    /* ALTTAKİ KÜÇÜK BUTONLAR */
+    /* ALTTAKİ SADE KÜÇÜK BUTONLAR */
     .bottom-bar {
       position: absolute;
       bottom: 20px;
@@ -94,31 +115,35 @@
     }
 
     .char-btn {
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
-      border: 3px solid #ffffff;
-      background: #ffffff;
+      border: none; /* Etraftaki kenarlığı kaldırdık */
+      background: transparent;
       cursor: pointer;
       overflow: hidden;
-      transition: all 0.3s ease;
-      opacity: 0.7;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      outline: none;
+      box-shadow: none; /* Etraftaki gölge/simge kaldırdık */
+      transition: transform 0.2s ease;
     }
 
     .char-btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: 50%;
       user-select: none;
       -webkit-user-drag: none;
     }
 
+    /* Tıklanınca etrafta hiçbir halka/simge çıkmaz, sadece hafif büyür */
+    .char-btn:focus, .char-btn:active {
+      outline: none;
+      box-shadow: none;
+    }
+
     .char-btn.active {
-      opacity: 1;
-      border-color: #fbc531;
-      transform: scale(1.15);
-      box-shadow: 0 0 15px rgba(251, 197, 49, 0.9);
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -126,15 +151,15 @@
 
   <div class="mic-indicator" id="micBtn">🎤</div>
 
-  <!-- BÜYÜK KARAKTER GÖRSELLERİ (İsim yazıları kaldırıldı) -->
+  <!-- BÜYÜK KARAKTER GÖRSELLERİ -->
   <div class="character-stage">
     <img src="resim/sirinbaba.png" class="big-char pos-center" id="char-sirinbaba" onclick="switchCharacter('Şirin Baba')">
-    <img src="resim/sirine.png" class="big-char pos-far-left" id="char-sirine" onclick="switchCharacter('Şirine')">
-    <img src="resim/gargamel.png" class="big-char pos-left" id="char-gargamel" onclick="switchCharacter('Gargamel')">
-    <img src="resim/gozluklu.png" class="big-char pos-right" id="char-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')">
+    <img src="resim/gozluklu.png" class="big-char pos-far-left" id="char-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')">
+    <img src="resim/sirine.png" class="big-char pos-left" id="char-sirine" onclick="switchCharacter('Şirine')">
+    <img src="resim/gargamel.png" class="big-char pos-right" id="char-gargamel" onclick="switchCharacter('Gargamel')">
   </div>
 
-  <!-- ALT KÜÇÜK BUTONLAR -->
+  <!-- ALT KÜÇÜK BUTONLAR (Sadeleştirildi) -->
   <div class="bottom-bar">
     <button class="char-btn active" id="btn-sirinbaba" onclick="switchCharacter('Şirin Baba')">
       <img src="resim/sirinbababuton.png">
@@ -159,12 +184,12 @@
 
     const micBtn = document.getElementById('micBtn');
 
-    // Her karakterin anlık pozisyon takibi
+    // Her karakterin sahnede durduğu anlık pozisyon haritası
     const charPositions = {
       "Şirin Baba": "pos-center",
-      "Şirine": "pos-far-left",
-      "Gargamel": "pos-left",
-      "Gözlüklü Şirin": "pos-right"
+      "Gözlüklü Şirin": "pos-far-left",
+      "Şirine": "pos-left",
+      "Gargamel": "pos-right"
     };
 
     const charPrompts = {
@@ -174,21 +199,21 @@
       "Gözlüklü Şirin": "Sen Her şeyi bildiğini sanan Gözlüklü Şirin'sin. SADECE TÜRKÇE KONUŞ. 'Şirin Baba her zaman der ki...' gibi ifadeler kullan. Bilgiç ama tatlı konuş. Kısa cevap ver."
     };
 
-    // YER DEĞİŞTİRME MEKANİZMASI
+    // YER DEĞİŞTİRME MEKANİZMASI (Öne Geçme / Arkaya Kayma)
     function switchCharacter(targetChar) {
       if (activeChar === targetChar) return;
 
       const previousChar = activeChar;
       const targetOldPos = charPositions[targetChar];
 
-      // 1. Eski aktif karakteri, seçilen karakterin boşalttığı yere gönder
+      // 1. Ortadaki karakteri, seçilen karakterin bıraktığı yere gönder
       charPositions[previousChar] = targetOldPos;
       const prevEl = getCharElement(previousChar);
       if (prevEl) {
         prevEl.className = `big-char ${targetOldPos}`;
       }
 
-      // 2. Seçilen yeni karakteri TAM MERKEZE (pos-center) getir
+      // 2. Çağrılan karakteri öne/merkeze getir
       activeChar = targetChar;
       charPositions[targetChar] = "pos-center";
       const targetEl = getCharElement(targetChar);
@@ -196,12 +221,12 @@
         targetEl.className = 'big-char pos-center';
       }
 
-      // 3. Alt taraftaki küçük buton durumunu güncelle
+      // 3. Alt buton durumunu güncelle
       document.querySelectorAll('.char-btn').forEach(el => el.classList.remove('active'));
       const btnId = getBtnId(targetChar);
       if (btnId) document.getElementById(btnId).classList.add('active');
 
-      // 4. Karakter merkeze gelince Türkçe sesli karşılama yap
+      // 4. Türkçe sesli karşılama yap
       speakText(`Merhaba! Ben ${activeChar}, seninle sohbet etmek için geldim!`);
     }
 
