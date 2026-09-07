@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -55,7 +56,7 @@
       pointer-events: none;
     }
 
-    /* BÜYÜK KARAKTER GÖRSELLERİ - Ekstra katman ve simgeler tamamen temizlendi */
+    /* BÜYÜK KARAKTER GÖRSELLERİ */
     .big-char {
       position: absolute;
       bottom: 30px;
@@ -66,7 +67,7 @@
       cursor: pointer;
       pointer-events: auto;
       
-      /* Yumuşak yer değiştirme animasyonu */
+      /* Yumuşak kayma animasyonu */
       transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                   opacity 0.8s ease, 
                   filter 0.8s ease,
@@ -76,20 +77,9 @@
       filter: brightness(0.85);
       user-select: none;
       -webkit-user-drag: none;
-      
-      /* Tarayıcı varsayılan vurgularını ve ikonlarını engelleme */
-      outline: none !important;
-      border: none !important;
-      background: none !important;
-      box-shadow: none !important;
     }
 
-    .big-char::before, .big-char::after {
-      content: none !important;
-      display: none !important;
-    }
-
-    /* YER/POZİSYON KODLARI (4 Sabit Konum) */
+    /* YER/POZİSYON SIFIRLAMALARI (4 Sabit Konum) */
     .pos-far-left { 
       transform: translateX(-170%) scale(0.75); 
       z-index: 10; 
@@ -129,20 +119,13 @@
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      border: none !important;
-      background: transparent !important;
+      border: none; /* Etraftaki kenarlığı kaldırdık */
+      background: transparent;
       cursor: pointer;
       overflow: hidden;
-      outline: none !important;
-      box-shadow: none !important;
+      outline: none;
+      box-shadow: none; /* Etraftaki gölge/simge kaldırdık */
       transition: transform 0.2s ease;
-      padding: 0;
-      margin: 0;
-    }
-
-    .char-btn::before, .char-btn::after {
-      content: none !important;
-      display: none !important;
     }
 
     .char-btn img {
@@ -152,18 +135,16 @@
       border-radius: 50%;
       user-select: none;
       -webkit-user-drag: none;
-      display: block;
     }
 
-    .char-btn:focus, .char-btn:active, .char-btn.active {
-      outline: none !important;
-      box-shadow: none !important;
-      border: none !important;
-      background: transparent !important;
+    /* Tıklanınca etrafta hiçbir halka/simge çıkmaz, sadece hafif büyür */
+    .char-btn:focus, .char-btn:active {
+      outline: none;
+      box-shadow: none;
     }
 
     .char-btn.active {
-      transform: scale(1.15);
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -179,7 +160,7 @@
     <img src="resim/gargamel.png" class="big-char pos-right" id="char-gargamel" onclick="switchCharacter('Gargamel')">
   </div>
 
-  <!-- ALT KÜÇÜK BUTONLAR -->
+  <!-- ALT KÜÇÜK BUTONLAR (Sadeleştirildi) -->
   <div class="bottom-bar">
     <button class="char-btn active" id="btn-sirinbaba" onclick="switchCharacter('Şirin Baba')">
       <img src="resim/sirinbababuton.png">
