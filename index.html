@@ -9,7 +9,7 @@
     
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-      /* GitHub'a yüklediğiniz yerel arka plan resmi */
+      /* Arka plan görseliniz */
       background: url('resim/background.png') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -35,6 +35,7 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       z-index: 100;
       transition: all 0.3s;
+      cursor: pointer;
     }
     .mic-indicator.listening {
       background: #44bd32;
@@ -46,188 +47,106 @@
       100% { transform: scale(1); }
     }
 
-    /* Konuşma Balonu */
-    .speech-bubble {
-      position: absolute;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.95);
-      border: 5px solid #00a8ff;
-      border-radius: 30px;
-      padding: 20px 30px;
-      max-width: 80%;
-      width: 500px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: #2f3542;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      z-index: 90;
-    }
-
-    /* Sahne ve Öne Çıkan Karakter Alanı */
-    .stage {
-      position: absolute;
-      bottom: 120px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      width: 100%;
-      height: 60vh;
-      pointer-events: none;
-    }
-
-    .character-avatar {
-      max-height: 80%;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      opacity: 0;
-      transform: scale(0.5);
-      position: absolute;
-    }
-
-    /* Aktif Karakter Öne Fırlar ve Büyür */
-    .character-avatar.active {
-      opacity: 1;
-      transform: scale(1.2);
-    }
-
-    /* Gargamel & Azman Birlikte Çıktığında */
-    .duo-container {
-      display: flex;
-      align-items: flex-end;
-      gap: -20px;
-    }
-
-    /* Alt Karakter Seçim İkonları */
+    /* 
+      Alt Tıklama Alanları:
+      Arka plandaki 5 dairenin (Şirin Baba, Şirine, Gargamel, Azman, Gözlüklü) 
+      üzerine tam oturacak şekilde şeffaf butonlar
+    */
     .bottom-bar {
       position: absolute;
-      bottom: 15px;
+      bottom: 25px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 15px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 10px 20px;
-      border-radius: 40px;
-      backdrop-filter: blur(5px);
+      justify-content: space-between;
+      width: 82%; /* Arka plandaki dairelerin mesafesine göre ayarlandı */
+      max-width: 900px;
       z-index: 100;
     }
 
-    /* Karakter Butonlarının İçine Resim Oturtma */
     .char-btn {
-      width: 70px;
-      height: 70px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      border: 3px solid #fff;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      border: 3px solid transparent;
+      background: transparent;
       cursor: pointer;
       transition: transform 0.2s, border-color 0.2s;
-      overflow: hidden;
     }
 
+    /* Tıklanan karakterin etrafında sarı halka belirir */
     .char-btn.active {
       border-color: #fbc531;
-      transform: scale(1.2);
+      transform: scale(1.1);
+      box-shadow: 0 0 15px rgba(251, 197, 49, 0.8);
     }
-
-    /* Her Butona Karakter Görselini Bağlama */
-    .btn-sirin-baba { background-image: url('https://i.postimg.cc/png-sirin-baba.png'); }
-    .btn-sirine     { background-image: url('https://i.postimg.cc/png-sirine.png'); }
-    .btn-gargamel   { background-image: url('https://i.postimg.cc/png-gargamel.png'); }
-    .btn-gozluklu   { background-image: url('https://i.postimg.cc/png-gozluklu.png'); }
   </style>
 </head>
 <body>
 
   <div class="mic-indicator listening" id="micBtn">🎤</div>
 
-  <div class="speech-bubble" id="bubble">
-    Bana "Şirin Baba", "Şirine", "Gargamel" veya "Gözlüklü" de!
-  </div>
-
-  <!-- ÖNE ÇIKAN KARAKTER SAHNESİ -->
-  <div class="stage">
-    <img id="img-sirin-baba" class="character-avatar active" src="https://i.postimg.cc/png-sirin-baba.png" alt="Şirin Baba" />
-    <img id="img-sirine" class="character-avatar" src="https://i.postimg.cc/png-sirine.png" alt="Şirine" />
-    <img id="img-gozluklu" class="character-avatar" src="https://i.postimg.cc/png-gozluklu.png" alt="Gözlüklü Şirin" />
-    
-    <!-- Gargamel ve Azman Birlikte -->
-    <div id="img-gargamel-azman" class="character-avatar duo-container">
-      <img src="https://i.postimg.cc/png-gargamel.png" style="height: 350px;" />
-      <img src="https://i.postimg.cc/png-azman.png" style="height: 180px; margin-left: -40px;" />
-    </div>
-  </div>
-
-  <!-- Alt Butonlar (Karakter Resimli) -->
+  <!-- Alt Taraftaki Arka Plan Dairelerine Denk Gelen 5 Buton -->
   <div class="bottom-bar">
-    <div class="char-btn btn-sirin-baba active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba"></div>
-    <div class="char-btn btn-sirine" onclick="switchCharacter('Şirine')" title="Şirine"></div>
-    <div class="char-btn btn-gargamel" onclick="switchCharacter('Gargamel ve Azman')" title="Gargamel ve Azman"></div>
-    <div class="char-btn btn-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin"></div>
+    <div class="char-btn active" onclick="switchCharacter('Şirin Baba')" title="Şirin Baba"></div>
+    <div class="char-btn" onclick="switchCharacter('Şirine')" title="Şirine"></div>
+    <div class="char-btn" onclick="switchCharacter('Gargamel')" title="Gargamel"></div>
+    <div class="char-btn" onclick="switchCharacter('Azman')" title="Azman"></div>
+    <div class="char-btn" onclick="switchCharacter('Gözlüklü Şirin')" title="Gözlüklü Şirin"></div>
   </div>
 
   <script>
     let activeChar = "Şirin Baba";
     let isSpeaking = false;
 
-    const bubble = document.getElementById('bubble');
     const micBtn = document.getElementById('micBtn');
 
     // KARAKTER SES VE KİŞİLİK AYARLARI
     const charSettings = {
       "Şirin Baba": {
-        elementId: "img-sirin-baba",
         pitch: 0.7, // Tok, yaşlı erkek sesi
         rate: 0.8,  // Yavaş ve babacan
         welcome: "Merhaba küçük dostum! Ben Şirin Baba."
       },
       "Şirine": {
-        elementId: "img-sirine",
         pitch: 1.6, // İnce, neşeli kadın/kız sesi
         rate: 0.9,
         welcome: "Ayy merhaba! Ben Şirine, seninle oynamak çok güzel!"
       },
-      "Gargamel ve Azman": {
-        elementId: "img-gargamel-azman",
+      "Gargamel": {
         pitch: 0.5, // Kaba ve kıkırdayan ses
         rate: 0.95,
-        welcome: "Hahaha! Ben Gargamel, bu da Azman! Yakaladım seni!"
+        welcome: "Hahaha! Ben Gargamel! Seni yakalayacağım Şirin!"
+      },
+      "Azman": {
+        pitch: 1.8, // Kedi sesi / yüksek frekans
+        rate: 1.1,
+        welcome: "Miyavvv! Ben Azman, Şirinleri avlamaya hazırım!"
       },
       "Gözlüklü Şirin": {
-        elementId: "img-gozluklu",
         pitch: 1.3, // Bilgiç, hafif ince ses
         rate: 1.0,
         welcome: "Şirin Baba her zaman der ki: Konuşmak çok güzeldir!"
       }
     };
 
-    // KARAKTER DEĞİŞTİRME MANTIĞI (Görseli ve Buton Aktifliğini Ayarlar)
+    // KARAKTER DEĞİŞTİRME MANTIĞI
     function switchCharacter(name) {
       activeChar = name;
       
-      // Tüm görselleri gizle
-      document.querySelectorAll('.character-avatar').forEach(el => el.classList.remove('active'));
-      
-      // Tüm butonların aktiflik çizgisini kaldır
-      document.querySelectorAll('.char-btn').forEach(el => el.classList.remove('active'));
+      // Tüm butonların aktiflik çizgisini temizle
+      const buttons = document.querySelectorAll('.char-btn');
+      buttons.forEach(el => el.classList.remove('active'));
 
-      // Seçilen karakteri öne getir
+      // Seçilen butona sarı halka ekle
       const activeData = charSettings[name];
       if(activeData) {
-        document.getElementById(activeData.elementId).classList.add('active');
-        
-        // Tıklanan butonu sarı çerçeveli yap
-        if(name === 'Şirin Baba') document.querySelector('.btn-sirin-baba').classList.add('active');
-        if(name === 'Şirine') document.querySelector('.btn-sirine').classList.add('active');
-        if(name === 'Gargamel ve Azman') document.querySelector('.btn-gargamel').classList.add('active');
-        if(name === 'Gözlüklü Şirin') document.querySelector('.btn-gozluklu').classList.add('active');
+        if(name === 'Şirin Baba') buttons[0].classList.add('active');
+        if(name === 'Şirine') buttons[1].classList.add('active');
+        if(name === 'Gargamel') buttons[2].classList.add('active');
+        if(name === 'Azman') buttons[3].classList.add('active');
+        if(name === 'Gözlüklü Şirin') buttons[4].classList.add('active');
 
-        bubble.innerText = activeData.welcome;
         speakText(activeData.welcome);
       }
     }
@@ -253,12 +172,12 @@
         // Sesle Karakter Çağırma Kontrolü
         if (text.includes("şirin baba")) { switchCharacter("Şirin Baba"); return; }
         if (text.includes("şirine")) { switchCharacter("Şirine"); return; }
-        if (text.includes("gargamel") || text.includes("azman")) { switchCharacter("Gargamel ve Azman"); return; }
+        if (text.includes("gargamel")) { switchCharacter("Gargamel"); return; }
+        if (text.includes("azman")) { switchCharacter("Azman"); return; }
         if (text.includes("gözlüklü")) { switchCharacter("Gözlüklü Şirin"); return; }
 
         // Normal Konuşma
         if (text.length > 1) {
-          bubble.innerText = `"${text}"`;
           await processResponse(text);
         }
       };
@@ -270,11 +189,12 @@
       stopListening();
       
       let aiText = `${activeChar}: Seni duyabiliyorum küçük dostum!`;
-      if(activeChar === "Gargamel ve Azman") {
-        aiText = "Gargamel: Yakalayacağım seni! Azman: Miyavvv!";
+      if(activeChar === "Gargamel") {
+        aiText = "Gargamel: Yakalayacağım seni küçük Şirin!";
+      } else if(activeChar === "Azman") {
+        aiText = "Azman: Miyavvv! Şirinleri bana ver!";
       }
 
-      bubble.innerText = aiText;
       speakText(aiText);
     }
 
