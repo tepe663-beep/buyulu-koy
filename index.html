@@ -1,345 +1,276 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Şirinler Canlı Yapay Zeka Sohbeti</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background: url('resim/background1.png') no-repeat center center fixed;
-      background-size: cover;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      position: relative;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şirinler Canlı Yapay Zeka Sohbeti</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Üst Mikrofon Durum ve Tıklama İkonu */
-    .mic-indicator {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 75px;
-      height: 75px;
-      border-radius: 50%;
-      background: #00a8ff;
-      border: 4px solid #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 34px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      z-index: 200;
-      cursor: pointer; /* Tıklanabilir buton görünümü */
-      transition: all 0.3s;
-      user-select: none;
-    }
-    .mic-indicator:hover {
-      transform: scale(1.05);
-    }
-    .mic-indicator.listening { 
-      background: #44bd32; 
-      animation: pulse 1s infinite; 
-    }
-    .mic-indicator.thinking { 
-      background: #fbc531; 
-    }
-    .mic-indicator.stopped { 
-      background: #718093; 
-    }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
+        .background {
+            width: 100%;
+            height: 100%;
+            background: url('buyulukoy.png') no-repeat center center;
+            background-size: cover;
+            position: relative;
+        }
 
-    /* Alt Buton Hizalama ve Karakter Alanı */
-    .bottom-bar {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      z-index: 100;
-    }
+        .title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
 
-    /* Dairesel Karakter Butonları */
-    .char-btn {
-      width: 85px;
-      height: 85px;
-      border-radius: 50%;
-      border: 3px solid #ffffff;
-      background: #ffffff;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.5s ease-in-out;
-      opacity: 0.5;
-      transform: scale(0.9);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
+        .mic-icon {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.3s;
+        }
 
-    .char-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+        .mic-icon:hover {
+            transform: translateX(-50%) scale(1.2);
+        }
 
-    /* Çağrılan / Öne Gelen Karakter */
-    .char-btn.active {
-      opacity: 1;
-      border-color: #fbc531;
-      transform: scale(1.3) translateY(-15px);
-      box-shadow: 0 0 20px rgba(251, 197, 49, 0.9);
-      z-index: 150;
-    }
-  </style>
+        .mic-icon.listening {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.3); }
+        }
+
+        .buttons-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .character-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .character-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .character-btn.active {
+            animation: popOut 0.5s ease;
+            transform: scale(1.3);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        @keyframes popOut {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1.3); }
+        }
+
+        .character-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .character-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            white-space: nowrap;
+        }
+
+        .character-btn.active .character-label {
+            bottom: -35px;
+            font-size: 1em;
+        }
+
+        .status-text {
+            position: absolute;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status-text.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
+    <div class="background">
+        <h1 class="title">Şirinler Canlı Yapay Zeka Sohbeti</h1>
+        
+        <div class="mic-icon" id="micBtn">🎤</div>
+        
+        <div class="status-text" id="statusText"></div>
 
-  <!-- Sağ Üst Mikrofon Butonu (Tıklanabilir) -->
-  <div class="mic-indicator stopped" id="micBtn" onclick="handleMicClick()" title="Dinlemeyi Başlat / Durdur">🎤</div>
+        <div class="buttons-container">
+            <div class="character-btn" data-character="sirinbaba">
+                <img src="sirinbababuton.png" alt="Şirin Baba">
+                <div class="character-label">Şirin Baba</div>
+            </div>
+            
+            <div class="character-btn" data-character="sirine">
+                <img src="sirinebuton.png" alt="Şirine">
+                <div class="character-label">Şirine</div>
+            </div>
+            
+            <div class="character-btn" data-character="gozluklu">
+                <img src="gozluklubuton.png" alt="Gözlüklü">
+                <div class="character-label">Gözlüklü</div>
+            </div>
+            
+            <div class="character-btn" data-character="gargamel">
+                <img src="gargamelbuton.png" alt="Gargamel">
+                <div class="character-label">Gargamel</div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Ses dosyası oynatıcı -->
-  <audio id="customAudioPlayer" style="display:none;"></audio>
+    <script>
+        const buttons = document.querySelectorAll('.character-btn');
+        const micBtn = document.getElementById('micBtn');
+        const statusText = document.getElementById('statusText');
 
-  <div class="bottom-bar">
-    <button class="char-btn active" id="btn-sirinbaba" onclick="switchCharacter('Şirin Baba')">
-      <img src="resim/sirinbababuton.png" alt="Şirin Baba">
-    </button>
-    <button class="char-btn" id="btn-sirine" onclick="switchCharacter('Şirine')">
-      <img src="resim/sirinebuton.png" alt="Şirine">
-    </button>
-    <button class="char-btn" id="btn-gargamel" onclick="switchCharacter('Gargamel')">
-      <img src="resim/gargamelbuton.png" alt="Gargamel">
-    </button>
-    <button class="char-btn" id="btn-gozluklu" onclick="switchCharacter('Gözlüklü Şirin')">
-      <img src="resim/gozluklubuton.png" alt="Gözlüklü Şirin">
-    </button>
-  </div>
-
-  <script>
-    const GEMINI_API_KEY = "AQ.Ab8RN6KQxG7NimmTeLqgjpY3-GvCdEmX6_jowBWLDus2gpDyiw";
-
-    let activeChar = "Şirin Baba";
-    let isSpeaking = false;
-    let isThinking = false;
-    let isListeningActive = false; // Mikrofonun aktif/pasif durumunu takip eder
-    let availableVoices = [];
-
-    const micBtn = document.getElementById('micBtn');
-
-    // Tarayıcıdaki Türkçe ses motorunu yükleme
-    function loadVoices() {
-      if ('speechSynthesis' in window) {
-        availableVoices = window.speechSynthesis.getVoices();
-      }
-    }
-    loadVoices();
-    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = loadVoices;
-    }
-
-    // Türkçe Karakter Rolleri (Prompt)
-    const charPrompts = {
-      "Şirin Baba": "Sadece Türkçe konuş. Asla başka bir dil kullanma. Sen Şirinler köyünün bilge lideri Şirin Baba'sın. Karşındaki küçük bir çocuk. Ona babacan, sevecen, eğitici ve tatlı bir dille cevap ver. Yanıtların 2-3 cümleyi geçmesin.",
-      "Şirine": "Sadece Türkçe konuş. Asla başka bir dil kullanma. Sen Şirinler köyündeki Şirine'sin. Çok neşeli, tatlı, nazik ve enerjiksin. Yanıtların çocuksu ve neşeli Türkçe olsun. En fazla 2-3 cümle yaz.",
-      "Gargamel": "Sadece Türkçe konuş. Asla başka bir dil kullanma. Sen Şirinler'in düşmanı komik Gargamel'sin. Huysuz ama eğlenceli konuş. Şirinleri yakalama planlarından bahset ama çocuğu güldürecek tatlılıkta olsun. Kısa Türkçe cevap ver.",
-      "Gözlüklü Şirin": "Sadece Türkçe konuş. Asla başka bir dil kullanma. Sen Her şeyi bildiğini sanan Gözlüklü Şirin'sin. 'Şirin Baba her zaman der ki...' gibi ifadeler kullan. Bilgiç ama tatlı konuş. Kısa Türkçe cevap ver."
-    };
-
-    // Karakter Değiştirme
-    function switchCharacter(name) {
-      activeChar = name;
-      
-      const buttons = document.querySelectorAll('.char-btn');
-      buttons.forEach(el => el.classList.remove('active'));
-
-      if(name === 'Şirin Baba') document.getElementById('btn-sirinbaba').classList.add('active');
-      if(name === 'Şirine') document.getElementById('btn-sirine').classList.add('active');
-      if(name === 'Gargamel') document.getElementById('btn-gargamel').classList.add('active');
-      if(name === 'Gözlüklü Şirin') document.getElementById('btn-gozluklu').classList.add('active');
-
-      speakText(`Merhaba! Ben ${activeChar}, seninle sohbet etmek için sabırsızlanıyorum!`);
-    }
-
-    // Sesli Komutla Karakter Çağırma Kontrolü
-    function checkVoiceCharacterSwitch(userText) {
-      const text = userText.toLowerCase();
-
-      if ((text.includes("şirin baba") || text.includes("baba")) && activeChar !== "Şirin Baba") {
-        switchCharacter("Şirin Baba");
-        return true;
-      }
-      if (text.includes("şirine") && activeChar !== "Şirine") {
-        switchCharacter("Şirine");
-        return true;
-      }
-      if (text.includes("gargamel") && activeChar !== "Gargamel") {
-        switchCharacter("Gargamel");
-        return true;
-      }
-      if ((text.includes("gözlüklü") || text.includes("gözlük")) && activeChar !== "Gözlüklü Şirin") {
-        switchCharacter("Gözlüklü Şirin");
-        return true;
-      }
-      return false;
-    }
-
-    // Google Gemini Yapay Zekasından Türkçe Cevap Alma
-    async function getAIResponse(userText) {
-      micBtn.className = "mic-indicator thinking";
-      isThinking = true;
-
-      const systemPrompt = charPrompts[activeChar];
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: `${systemPrompt}\n\nÇocuğun Türkçe söylediği: "${userText}"` }]
-            }]
-          })
+        // Buton tıklama animasyonu
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                activateCharacter(this);
+            });
         });
 
-        const data = await response.json();
-        return data.candidates[0].content.parts[0].text;
-      } catch (err) {
-        console.error("Gemini Hata:", err);
-        return "Seni tam duyamadım küçük dostum, tekrar söyler misin?";
-      } finally {
-        isThinking = false;
-      }
-    }
-
-    // Canlı Türkçe Seslendirme Motoru
-    function speakText(text) {
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'tr-TR';
-
-      if (availableVoices.length === 0) {
-        availableVoices = window.speechSynthesis.getVoices();
-      }
-      const turkishVoice = availableVoices.find(v => v.lang.includes('tr') || v.lang.includes('TR'));
-      if (turkishVoice) utterance.voice = turkishVoice;
-
-      if (activeChar === "Şirin Baba") { utterance.pitch = 0.8; utterance.rate = 0.9; }
-      else if (activeChar === "Şirine") { utterance.pitch = 1.4; utterance.rate = 1.0; }
-      else if (activeChar === "Gargamel") { utterance.pitch = 0.6; utterance.rate = 1.1; }
-      else if (activeChar === "Gözlüklü Şirin") { utterance.pitch = 1.2; utterance.rate = 1.1; }
-
-      isSpeaking = true;
-      stopListening();
-
-      utterance.onend = () => {
-        isSpeaking = false;
-        if (isListeningActive) startListening();
-      };
-
-      utterance.onerror = () => {
-        isSpeaking = false;
-        if (isListeningActive) startListening();
-      };
-
-      window.speechSynthesis.speak(utterance);
-    }
-
-    // Ses Tanıma ve Dinleme (Mikrofon)
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-
-    if (Recognition) {
-      recognition = new Recognition();
-      recognition.lang = 'tr-TR';
-      recognition.continuous = false; // Tek elden dinleme döngüsü için false daha stabildir
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        micBtn.className = "mic-indicator listening";
-      };
-
-      recognition.onend = () => {
-        // Eğer dinleme modu aktif tutulmak isteniyorsa ve konuşma/düşünme aşamasında değilsek otomatik devam et
-        if (isListeningActive && !isSpeaking && !isThinking) {
-          try { recognition.start(); } catch(e){}
-        } else if (!isThinking && !isSpeaking) {
-          micBtn.className = "mic-indicator stopped";
+        function activateCharacter(btn) {
+            // Tüm butonlardan active sınıfını kaldır
+            buttons.forEach(b => b.classList.remove('active'));
+            
+            // Tıklanan butona active sınıfı ekle
+            btn.classList.add('active');
+            
+            const character = btn.dataset.character;
+            showStatus(`${character.charAt(0).toUpperCase() + character.slice(1)} seçildi!`);
+            
+            // 2 saniye sonra active sınıfını kaldır
+            setTimeout(() => {
+                btn.classList.remove('active');
+            }, 2000);
         }
-      };
 
-      recognition.onerror = (e) => {
-        console.log("Mikrofon durumu:", e.error);
-        if (e.error === 'not-allowed') {
-          isListeningActive = false;
-          micBtn.className = "mic-indicator stopped";
-          alert("Lütfen tarayıcınızın mikrofon iznini onaylayın.");
+        function showStatus(text) {
+            statusText.textContent = text;
+            statusText.classList.add('show');
+            
+            setTimeout(() => {
+                statusText.classList.remove('show');
+            }, 2000);
         }
-      };
 
-      recognition.onresult = async (e) => {
-        const text = e.results[0][0].transcript.trim();
-        console.log("Duyulan ses:", text);
-        if(!text) return;
+        // Sesli komut sistemi
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.lang = 'tr-TR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
 
-        const characterChanged = checkVoiceCharacterSwitch(text);
+            micBtn.addEventListener('click', () => {
+                recognition.start();
+                micBtn.classList.add('listening');
+                showStatus('Dinleniyor... Bir karakter ismi söyleyin!');
+            });
 
-        if (!characterChanged) {
-          const aiResponse = await getAIResponse(text);
-          speakText(aiResponse);
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                micBtn.classList.remove('listening');
+                
+                // Karakter isimlerini eşleştir
+                const characterMap = {
+                    'şirin baba': 'sirinbaba',
+                    'sirin baba': 'sirinbaba',
+                    'şirine': 'sirine',
+                    'sirine': 'sirine',
+                    'gözlüklü': 'gozluklu',
+                    'gozluklu': 'gozluklu',
+                    'gargamel': 'gargamel'
+                };
+
+                let found = false;
+                for (let key in characterMap) {
+                    if (transcript.includes(key)) {
+                        const characterName = characterMap[key];
+                        const btn = document.querySelector(`[data-character="${characterName}"]`);
+                        if (btn) {
+                            activateCharacter(btn);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    showStatus(`"${transcript}" - Karakter bulunamadı!`);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                micBtn.classList.remove('listening');
+                showStatus('Ses tanıma hatası: ' + event.error);
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+            };
+        } else {
+            micBtn.style.display = 'none';
+            console.log('Tarayıcınız ses tanımayı desteklemiyor.');
         }
-      };
-    } else {
-      alert("Tarayıcınız ses tanımayı desteklemiyor. Lütfen Google Chrome veya Edge kullanın.");
-    }
-
-    function stopListening() { 
-      if(recognition) try{ recognition.stop(); }catch(e){} 
-    }
-    
-    function startListening() { 
-      if(recognition && !isSpeaking && !isThinking) {
-        try { 
-          recognition.start(); 
-        } catch(e) {
-          // Zaten başladıysa durdurup tekrar dener
-          recognition.stop();
-          setTimeout(() => { try{ recognition.start(); }catch(err){} }, 100);
-        } 
-      }
-    }
-
-    // SAĞ ÜSTTEKİ MİKROFONA TIKLANDIĞINDA ÇALIŞACAK FONKSİYON
-    function handleMicClick() {
-      if (isSpeaking || isThinking) return;
-
-      if (isListeningActive) {
-        // Dinlemeyi kapat
-        isListeningActive = false;
-        stopListening();
-        micBtn.className = "mic-indicator stopped";
-      } else {
-        // Dinlemeyi başlat
-        isListeningActive = true;
-        startListening();
-      }
-    }
-
-    // Sayfa Yüklendiğinde Otomatik Başlatmayı Dene
-    window.onload = () => { 
-      isListeningActive = true;
-      startListening(); 
-    };
-  </script>
+    </script>
 </body>
 </html>
