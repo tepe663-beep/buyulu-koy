@@ -21,40 +21,38 @@
         .background {
             width: 100%;
             height: 100%;
-            background: url('buyulukoy.png') no-repeat center center;
+            background: url('image/buyulukoy.png') no-repeat center center;
             background-size: cover;
             position: relative;
         }
 
-        .title {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 2.5em;
-            font-weight: bold;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            z-index: 10;
-        }
-
         .mic-icon {
             position: absolute;
-            top: 100px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 3em;
             cursor: pointer;
             z-index: 10;
             transition: transform 0.3s;
+            background: rgba(255, 255, 255, 0.2);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
 
         .mic-icon:hover {
             transform: translateX(-50%) scale(1.2);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .mic-icon.listening {
             animation: pulse 1s infinite;
+            background: rgba(255, 80, 80, 0.4);
         }
 
         @keyframes pulse {
@@ -70,6 +68,9 @@
             display: flex;
             gap: 20px;
             z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 20px;
         }
 
         .character-btn {
@@ -80,8 +81,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background: transparent;
+            padding: 0;
         }
 
         .character-btn:hover {
@@ -94,6 +97,7 @@
             transform: scale(1.3);
             box-shadow: 0 8px 30px rgba(0,0,0,0.5);
             z-index: 100;
+            border-color: #FFD700;
         }
 
         @keyframes popOut {
@@ -106,6 +110,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
         .character-label {
@@ -118,6 +124,7 @@
             font-size: 0.9em;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             white-space: nowrap;
+            pointer-events: none;
         }
 
         .character-btn.active .character-label {
@@ -127,7 +134,7 @@
 
         .status-text {
             position: absolute;
-            top: 160px;
+            top: 110px;
             left: 50%;
             transform: translateX(-50%);
             color: white;
@@ -136,39 +143,57 @@
             z-index: 10;
             opacity: 0;
             transition: opacity 0.3s;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
 
         .status-text.show {
             opacity: 1;
         }
+
+        /* Mobil uyumluluk */
+        @media (max-width: 600px) {
+            .character-btn {
+                width: 80px;
+                height: 80px;
+            }
+            .buttons-container {
+                gap: 10px;
+                bottom: 20px;
+            }
+            .character-label {
+                font-size: 0.75em;
+                bottom: -25px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="background">
-        <h1 class="title">Şirinler Canlı Yapay Zeka Sohbeti</h1>
-        
-        <div class="mic-icon" id="micBtn">🎤</div>
+        <div class="mic-icon" id="micBtn"></div>
         
         <div class="status-text" id="statusText"></div>
 
         <div class="buttons-container">
             <div class="character-btn" data-character="sirinbaba">
-                <img src="sirinbababuton.png" alt="Şirin Baba">
+                <img src="image/sirinbababuton.png" alt="Şirin Baba">
                 <div class="character-label">Şirin Baba</div>
             </div>
             
             <div class="character-btn" data-character="sirine">
-                <img src="sirinebuton.png" alt="Şirine">
+                <img src="image/sirinebuton.png" alt="Şirine">
                 <div class="character-label">Şirine</div>
             </div>
             
             <div class="character-btn" data-character="gozluklu">
-                <img src="gozluklubuton.png" alt="Gözlüklü">
+                <img src="image/gozluklubuton.png" alt="Gözlüklü">
                 <div class="character-label">Gözlüklü</div>
             </div>
             
             <div class="character-btn" data-character="gargamel">
-                <img src="gargamelbuton.png" alt="Gargamel">
+                <img src="image/gargamelbuton.png" alt="Gargamel">
                 <div class="character-label">Gargamel</div>
             </div>
         </div>
@@ -194,7 +219,8 @@
             btn.classList.add('active');
             
             const character = btn.dataset.character;
-            showStatus(`${character.charAt(0).toUpperCase() + character.slice(1)} seçildi!`);
+            const label = btn.querySelector('.character-label').textContent;
+            showStatus(`${label} seçildi!`);
             
             // 2 saniye sonra active sınıfını kaldır
             setTimeout(() => {
@@ -221,9 +247,13 @@
             recognition.interimResults = false;
 
             micBtn.addEventListener('click', () => {
-                recognition.start();
-                micBtn.classList.add('listening');
-                showStatus('Dinleniyor... Bir karakter ismi söyleyin!');
+                try {
+                    recognition.start();
+                    micBtn.classList.add('listening');
+                    showStatus('🎙️ Dinleniyor... Bir karakter ismi söyleyin!');
+                } catch(e) {
+                    console.log('Ses tanıma başlatılamadı:', e);
+                }
             });
 
             recognition.onresult = (event) => {
@@ -261,7 +291,9 @@
 
             recognition.onerror = (event) => {
                 micBtn.classList.remove('listening');
-                showStatus('Ses tanıma hatası: ' + event.error);
+                if (event.error !== 'no-speech') {
+                    showStatus('Ses tanıma hatası: ' + event.error);
+                }
             };
 
             recognition.onend = () => {
