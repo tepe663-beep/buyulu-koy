@@ -26,6 +26,7 @@
             position: relative;
         }
 
+        /* Mikrofon Butonu */
         .mic-icon {
             position: absolute;
             top: 30px;
@@ -50,7 +51,6 @@
         .mic-icon:hover {
             transform: translateX(-50%) scale(1.15);
             background: rgba(255, 255, 255, 0.35);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
         .mic-icon.listening {
@@ -63,6 +63,59 @@
             50% { transform: translateX(-50%) scale(1.3); }
         }
 
+        /* Büyük Karakter Gösterim Alanı */
+        .character-display-container {
+            position: absolute;
+            bottom: 170px; /* Butonların hemen üstü */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            text-align: center;
+            z-index: 5;
+            pointer-events: none; /* Tıklamaları engellememesi için */
+        }
+
+        .character-img {
+            max-height: 55vh; /* Ekranın %55'i kadar yükseklik */
+            max-width: 90vw;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none; /* Varsayılan olarak gizli */
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        }
+
+        .character-img.active {
+            display: inline-block;
+            opacity: 1;
+            transform: scale(1);
+            /* Konuşma ve Dans Animasyonu */
+            animation: danceTalk 2.5s infinite ease-in-out;
+        }
+
+        /* CSS ile Konuşma ve Dans Simülasyonu */
+        @keyframes danceTalk {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+            20% {
+                transform: translateY(-15px) scale(1.03) rotate(-3deg); /* Sola eğilip zıplama */
+            }
+            40% {
+                transform: translateY(0) scale(0.97) rotate(0deg); /* Konuşma efekti (küçülme) */
+            }
+            60% {
+                transform: translateY(-10px) scale(1.02) rotate(3deg); /* Sağa eğilip zıplama */
+            }
+            80% {
+                transform: translateY(0) scale(0.98) rotate(0deg); /* Konuşma efekti */
+            }
+            100% {
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+        }
+
+        /* Alt Küçük Butonlar */
         .buttons-container {
             position: absolute;
             bottom: 40px;
@@ -77,14 +130,13 @@
         }
 
         .character-btn {
-            width: 130px;
-            height: 130px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative;
-            overflow: visible;
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
             background: transparent;
             padding: 0;
@@ -97,16 +149,15 @@
 
         .character-btn.active {
             animation: popOut 0.6s ease;
-            transform: scale(1.35) translateY(-20px);
+            transform: scale(1.2) translateY(-10px);
             box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6);
             z-index: 100;
         }
 
         @keyframes popOut {
             0% { transform: scale(1) translateY(0); }
-            40% { transform: scale(1.5) translateY(-30px); }
-            70% { transform: scale(1.25) translateY(-15px); }
-            100% { transform: scale(1.35) translateY(-20px); }
+            40% { transform: scale(1.4) translateY(-20px); }
+            100% { transform: scale(1.2) translateY(-10px); }
         }
 
         .character-btn img {
@@ -117,6 +168,7 @@
             display: block;
         }
 
+        /* Durum Metni */
         .status-text {
             position: absolute;
             top: 120px;
@@ -142,49 +194,37 @@
 
         /* Mobil uyumluluk */
         @media (max-width: 650px) {
-            .buttons-container {
-                gap: 15px;
-                bottom: 30px;
-            }
-            .character-btn {
-                width: 90px;
-                height: 90px;
-            }
-            .character-btn.active {
-                transform: scale(1.3) translateY(-15px);
-            }
-        }
-
-        @media (max-width: 400px) {
-            .buttons-container {
-                gap: 10px;
-            }
-            .character-btn {
-                width: 75px;
-                height: 75px;
-            }
+            .buttons-container { gap: 15px; bottom: 20px; }
+            .character-btn { width: 75px; height: 75px; }
+            .character-display-container { bottom: 130px; }
+            .character-img { max-height: 45vh; }
         }
     </style>
 </head>
 <body>
     <div class="background">
-        <div class="mic-icon" id="micBtn"></div>
-        
+        <div class="mic-icon" id="micBtn">🎤</div>
         <div class="status-text" id="statusText"></div>
 
+        <!-- Büyük Karakter Görselleri -->
+        <div class="character-display-container">
+            <img src="image/sirinbababuyuk.png" alt="Şirin Baba" class="character-img" id="img-sirinbaba">
+            <img src="image/sirinebuyuk.png" alt="Şirine" class="character-img" id="img-sirine">
+            <img src="image/gozluklubuyuk.png" alt="Gözlüklü" class="character-img" id="img-gozluklu">
+            <img src="image/gargamelbuyuk.png" alt="Gargamel" class="character-img" id="img-gargamel">
+        </div>
+
+        <!-- Alt Küçük Butonlar -->
         <div class="buttons-container">
             <div class="character-btn" data-character="sirinbaba">
                 <img src="image/sirinbababuton.png" alt="Şirin Baba">
             </div>
-            
             <div class="character-btn" data-character="sirine">
                 <img src="image/sirinebuton.png" alt="Şirine">
             </div>
-            
             <div class="character-btn" data-character="gozluklu">
                 <img src="image/gozluklubuton.png" alt="Gözlüklü">
             </div>
-            
             <div class="character-btn" data-character="gargamel">
                 <img src="image/gargamelbuton.png" alt="Gargamel">
             </div>
@@ -195,21 +235,9 @@
         const buttons = document.querySelectorAll('.character-btn');
         const micBtn = document.getElementById('micBtn');
         const statusText = document.getElementById('statusText');
-
-        // Buton tıklama animasyonu
-        buttons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                activateCharacter(this);
-            });
-        });
+        const largeImages = document.querySelectorAll('.character-img');
 
         function activateCharacter(btn) {
-            // Tüm butonlardan active sınıfını kaldır
-            buttons.forEach(b => b.classList.remove('active'));
-            
-            // Tıklanan butona active sınıfı ekle
-            btn.classList.add('active');
-            
             const character = btn.dataset.character;
             const names = {
                 'sirinbaba': 'Şirin Baba',
@@ -217,22 +245,33 @@
                 'gozluklu': 'Gözlüklü',
                 'gargamel': 'Gargamel'
             };
-            showStatus(`${names[character]} ile konuşuyorsunuz! 🎭`);
-            
-            // 2.5 saniye sonra active sınıfını kaldır
-            setTimeout(() => {
-                btn.classList.remove('active');
-            }, 2500);
+
+            // 1. Küçük buton animasyonu
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            setTimeout(() => btn.classList.remove('active'), 1500);
+
+            // 2. Büyük resmi göster ve animasyonu başlat
+            largeImages.forEach(img => img.classList.remove('active'));
+            const activeImg = document.getElementById(`img-${character}`);
+            if (activeImg) {
+                activeImg.classList.add('active');
+            }
+
+            // 3. Durum mesajı
+            showStatus(`${names[character]} ile konuşuyorsunuz! `);
         }
 
         function showStatus(text) {
             statusText.textContent = text;
             statusText.classList.add('show');
-            
-            setTimeout(() => {
-                statusText.classList.remove('show');
-            }, 2500);
+            setTimeout(() => statusText.classList.remove('show'), 2500);
         }
+
+        // Buton tıklamaları
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => activateCharacter(btn));
+        });
 
         // Sesli komut sistemi
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -247,58 +286,39 @@
                 try {
                     recognition.start();
                     micBtn.classList.add('listening');
-                    showStatus('🎙️ Dinliyorum... Bir karakter ismi söyleyin!');
-                } catch(e) {
-                    console.log('Ses tanıma başlatılamadı:', e);
-                }
+                    showStatus('️ Dinliyorum... Bir karakter ismi söyleyin!');
+                } catch(e) { console.log('Hata:', e); }
             });
 
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript.toLowerCase();
                 micBtn.classList.remove('listening');
                 
-                // Karakter isimlerini eşleştir
                 const characterMap = {
-                    'şirin baba': 'sirinbaba',
-                    'sirin baba': 'sirinbaba',
-                    'şirine': 'sirine',
-                    'sirine': 'sirine',
-                    'gözlüklü': 'gozluklu',
-                    'gozluklu': 'gozluklu',
+                    'şirin baba': 'sirinbaba', 'sirin baba': 'sirinbaba',
+                    'şirine': 'sirine', 'sirine': 'sirine',
+                    'gözlüklü': 'gozluklu', 'gozluklu': 'gozluklu',
                     'gargamel': 'gargamel'
                 };
 
                 let found = false;
                 for (let key in characterMap) {
                     if (transcript.includes(key)) {
-                        const characterName = characterMap[key];
-                        const btn = document.querySelector(`[data-character="${characterName}"]`);
-                        if (btn) {
-                            activateCharacter(btn);
-                            found = true;
-                            break;
-                        }
+                        const btn = document.querySelector(`[data-character="${characterMap[key]}"]`);
+                        if (btn) { activateCharacter(btn); found = true; break; }
                     }
                 }
-
-                if (!found) {
-                    showStatus(`"${transcript}" - Karakter bulunamadı!`);
-                }
+                if (!found) showStatus(`"${transcript}" - Karakter bulunamadı!`);
             };
 
             recognition.onerror = (event) => {
                 micBtn.classList.remove('listening');
-                if (event.error !== 'no-speech') {
-                    showStatus('Ses tanıma hatası: ' + event.error);
-                }
+                if (event.error !== 'no-speech') showStatus('Ses hatası: ' + event.error);
             };
 
-            recognition.onend = () => {
-                micBtn.classList.remove('listening');
-            };
+            recognition.onend = () => micBtn.classList.remove('listening');
         } else {
             micBtn.style.display = 'none';
-            console.log('Tarayıcınız ses tanımayı desteklemiyor.');
         }
     </script>
 </body>
