@@ -26,7 +26,6 @@
             position: relative;
         }
 
-        /* Mikrofon Butonu */
         .mic-icon {
             position: absolute;
             top: 30px;
@@ -63,7 +62,6 @@
             50% { transform: translateX(-50%) scale(1.3); }
         }
 
-        /* Büyük Karakter Gösterim Alanı */
         .character-display-container {
             position: absolute;
             top: 45%;
@@ -96,26 +94,14 @@
             animation: danceTalk 2s infinite ease-in-out;
         }
 
-        /* CSS ile Konuşma ve Dans Simülasyonu */
         @keyframes danceTalk {
-            0% {
-                transform: translateY(0) scale(1) rotate(0deg);
-            }
-            25% {
-                transform: translateY(-20px) scale(1.04) rotate(-4deg);
-            }
-            50% {
-                transform: translateY(0) scale(0.96) rotate(0deg);
-            }
-            75% {
-                transform: translateY(-15px) scale(1.03) rotate(4deg);
-            }
-            100% {
-                transform: translateY(0) scale(1) rotate(0deg);
-            }
+            0% { transform: translateY(0) scale(1) rotate(0deg); }
+            25% { transform: translateY(-20px) scale(1.04) rotate(-4deg); }
+            50% { transform: translateY(0) scale(0.96) rotate(0deg); }
+            75% { transform: translateY(-15px) scale(1.03) rotate(4deg); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
         }
 
-        /* Alt Küçük Butonlar */
         .buttons-container {
             position: absolute;
             bottom: 40px;
@@ -168,7 +154,6 @@
             display: block;
         }
 
-        /* Durum Metni */
         .status-text {
             position: absolute;
             top: 120px;
@@ -192,18 +177,86 @@
             opacity: 1;
         }
 
-        /* Mobil uyumluluk */
+        /* Ses Kontrol Butonu */
+        .sound-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 2em;
+            cursor: pointer;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.25);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255,255,255,0.5);
+            transition: all 0.3s;
+        }
+
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        /* Konuşma Balonu */
+        .speech-bubble {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #333;
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 15;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
         @media (max-width: 650px) {
             .buttons-container { gap: 15px; bottom: 20px; }
             .character-btn { width: 75px; height: 75px; }
             .character-img { max-height: 55vh; }
+            .speech-bubble { font-size: 1em; padding: 15px 20px; }
         }
     </style>
 </head>
 <body>
     <div class="background">
         <div class="mic-icon" id="micBtn">🎤</div>
+        <div class="sound-toggle" id="soundToggle"></div>
         <div class="status-text" id="statusText"></div>
+        <div class="speech-bubble" id="speechBubble"></div>
 
         <!-- Büyük Karakter Görselleri -->
         <div class="character-display-container">
@@ -230,51 +283,175 @@
         </div>
     </div>
 
+    <!-- Ses Elementleri -->
+    <audio id="audio-sirinbaba" preload="auto">
+        <source src="audio/sirinbaba.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-sirine" preload="auto">
+        <source src="audio/sirine.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-gozluklu" preload="auto">
+        <source src="audio/gozlulu.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="audio-gargamel" preload="auto">
+        <source src="audio/gargamel.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const buttons = document.querySelectorAll('.character-btn');
         const micBtn = document.getElementById('micBtn');
         const statusText = document.getElementById('statusText');
         const largeImages = document.querySelectorAll('.character-img');
+        const soundToggle = document.getElementById('soundToggle');
+        const speechBubble = document.getElementById('speechBubble');
+        
+        let isMuted = false;
+        let currentCharacter = null;
+        let speechSynthesis = window.speechSynthesis;
+
+        // Ses dosyaları
+        const audioFiles = {
+            'sirinbaba': document.getElementById('audio-sirinbaba'),
+            'sirine': document.getElementById('audio-sirine'),
+            'gozluklu': document.getElementById('audio-gozluklu'),
+            'gargamel': document.getElementById('audio-gargamel')
+        };
+
+        // Karakter bilgileri
+        const characterInfo = {
+            'sirinbaba': { name: 'Şirin Baba', voice: 'TR-TR', pitch: 0.8, rate: 0.9 },
+            'sirine': { name: 'Şirine', voice: 'TR-TR', pitch: 1.2, rate: 1.0 },
+            'gozluklu': { name: 'Gözlüklü', voice: 'TR-TR', pitch: 1.0, rate: 1.1 },
+            'gargamel': { name: 'Gargamel', voice: 'TR-TR', pitch: 0.6, rate: 0.85 }
+        };
+
+        // Örnek cevaplar (Bunu daha sonra API ile değiştirebilirsiniz)
+        const sampleResponses = {
+            'sirinbaba': [
+                'Merhaba küçük şirin! Nasılsın?',
+                'Ben Şirin Baba, size nasıl yardımcı olabilirim?',
+                'Şirinler köyüne hoş geldin!',
+                'Akıllıca bir soru sordun!'
+            ],
+            'sirine': [
+                'Selam! Ben Şirine, ne yapmak istersin?',
+                'Çok tatlısın! Seninle konuşmak güzel!',
+                'Bugün çok neşeliyim!',
+                'Şirinler köyünde harika bir gün!'
+            ],
+            'gozluklu': [
+                'Merhaba! Ben Gözlüklü Şirin!',
+                'Kitap okumayı çok severim!',
+                'Bilgili biri olarak sana yardımcı olayım!',
+                'İlginç bir soru!'
+            ],
+            'gargamel': [
+                'Kahkahaa! Ben Gargamel!',
+                'Şirinleri yakalayacağım!',
+                'Kedim Azman ile buradayım!',
+                'Hahaha, ne istiyorsun?'
+            ]
+        };
 
         // Resim yükleme kontrolleri
         largeImages.forEach(img => {
-            img.addEventListener('error', function() {
-                console.error('❌ Resim yüklenemedi:', this.src);
-            });
-            img.addEventListener('load', function() {
-                console.log('✅ Resim yüklendi:', this.src);
-            });
+            img.addEventListener('error', () => console.error('❌ Resim yüklenemedi:', img.src));
+            img.addEventListener('load', () => console.log('✅ Resim yüklendi:', img.src));
+        });
+
+        // Ses açma/kapama
+        soundToggle.addEventListener('click', () => {
+            isMuted = !isMuted;
+            soundToggle.textContent = isMuted ? '🔇' : '';
+            soundToggle.classList.toggle('muted');
+            
+            if (isMuted) {
+                Object.values(audioFiles).forEach(audio => {
+                    audio.pause();
+                    audio.muted = true;
+                });
+                speechSynthesis.cancel();
+            } else {
+                Object.values(audioFiles).forEach(audio => {
+                    audio.muted = false;
+                });
+            }
         });
 
         function activateCharacter(btn) {
             const character = btn.dataset.character;
-            const names = {
-                'sirinbaba': 'Şirin Baba',
-                'sirine': 'Şirine',
-                'gozluklu': 'Gözlüklü',
-                'gargamel': 'Gargamel'
-            };
+            currentCharacter = character;
+            const info = characterInfo[character];
 
-            // 1. Küçük buton animasyonu
+            // Buton animasyonu
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             setTimeout(() => btn.classList.remove('active'), 1500);
 
-            // 2. Tüm büyük resimleri gizle
+            // Büyük resmi göster
             largeImages.forEach(img => img.classList.remove('active'));
-            
-            // 3. Seçilen büyük resmi göster
             const activeImg = document.getElementById(`img-${character}`);
             if (activeImg) {
-                setTimeout(() => {
-                    activeImg.classList.add('active');
-                }, 50);
-            } else {
-                console.error('❌ Büyük resim bulunamadı: img-' + character);
+                setTimeout(() => activeImg.classList.add('active'), 50);
             }
 
-            // 4. Durum mesajı
-            showStatus(`${names[character]} ile konuşuyorsunuz!`);
+            // Ses çal
+            playCharacterSound(character);
+
+            // Konuşma balonu göster
+            showSpeechBubble(`${info.name} size sesleniyor...`);
+            
+            showStatus(`${info.name} ile konuşuyorsunuz!`);
+        }
+
+        function playCharacterSound(character) {
+            if (isMuted) return;
+
+            // Önce MP3 dosyasını çalmayı dene
+            const audio = audioFiles[character];
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(err => {
+                    console.log('MP3 çalınamadı, TTS kullanılıyor:', err);
+                    // MP3 çalınamazsa TTS kullan
+                    speakWithTTS(character, `${characterInfo[character].name} merhaba!`);
+                });
+                
+                // MP3 bittiğinde TTS ile devam et (opsiyonel)
+                audio.onended = () => {
+                    // İsterseniz burada otomatik TTS başlatabilirsiniz
+                };
+            }
+        }
+
+        function speakWithTTS(character, text) {
+            if (isMuted || !speechSynthesis) return;
+
+            // Önceki konuşmayı durdur
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const info = characterInfo[character];
+            
+            utterance.lang = info.voice;
+            utterance.pitch = info.pitch;
+            utterance.rate = info.rate;
+            utterance.volume = 1;
+
+            // Türkçe sesleri bul
+            const voices = speechSynthesis.getVoices();
+            const turkishVoice = voices.find(v => v.lang.includes('tr'));
+            if (turkishVoice) {
+                utterance.voice = turkishVoice;
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function showSpeechBubble(text) {
+            speechBubble.textContent = text;
+            speechBubble.classList.add('show');
+            setTimeout(() => speechBubble.classList.remove('show'), 3000);
         }
 
         function showStatus(text) {
@@ -283,12 +460,27 @@
             setTimeout(() => statusText.classList.remove('show'), 2500);
         }
 
+        // Karakterlere soru sorma (Örnek)
+        function askCharacter(character, question) {
+            const responses = sampleResponses[character];
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            
+            showSpeechBubble(randomResponse);
+            speakWithTTS(character, randomResponse);
+        }
+
         // Buton tıklamaları
         buttons.forEach(btn => {
-            btn.addEventListener('click', () => activateCharacter(btn));
+            btn.addEventListener('click', () => {
+                activateCharacter(btn);
+                // Örnek: Karakter seçildiğinde rastgele bir cevap ver
+                setTimeout(() => {
+                    askCharacter(btn.dataset.character);
+                }, 1000);
+            });
         });
 
-        // Sesli komut sistemi
+        // Sesli komut
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
@@ -301,7 +493,7 @@
                 try {
                     recognition.start();
                     micBtn.classList.add('listening');
-                    showStatus('Dinliyorum... Bir karakter ismi söyleyin!');
+                    showStatus('🎙️ Dinliyorum... Bir karakter ismi söyleyin!');
                 } catch(e) { console.log('Hata:', e); }
             });
 
@@ -320,7 +512,12 @@
                 for (let key in characterMap) {
                     if (transcript.includes(key)) {
                         const btn = document.querySelector(`[data-character="${characterMap[key]}"]`);
-                        if (btn) { activateCharacter(btn); found = true; break; }
+                        if (btn) { 
+                            activateCharacter(btn);
+                            setTimeout(() => askCharacter(characterMap[key], transcript), 1000);
+                            found = true; 
+                            break; 
+                        }
                     }
                 }
                 if (!found) showStatus(`"${transcript}" - Karakter bulunamadı!`);
@@ -334,6 +531,14 @@
             recognition.onend = () => micBtn.classList.remove('listening');
         } else {
             micBtn.style.display = 'none';
+        }
+
+        // Sesleri yükle
+        if (speechSynthesis) {
+            speechSynthesis.getVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+            }
         }
     </script>
 </body>
