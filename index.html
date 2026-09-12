@@ -208,7 +208,7 @@
         <!-- Büyük Karakter Görselleri -->
         <div class="character-display-container">
             <img src="image/sirinbababuyuk.png" alt="Şirin Baba" class="character-img" id="img-sirinbaba">
-            <img src="image/sirinebuyuk.png" alt="Şirine" class="character-img" id="img-sirine">
+            <img src="image/sıirinebuyuk.png" alt="Şirine" class="character-img" id="img-sirine">
             <img src="image/gozluklubuyuk.png" alt="Gözlüklü" class="character-img" id="img-gozluklu">
             <img src="image/gargamelbuyuk.png" alt="Gargamel" class="character-img" id="img-gargamel">
         </div>
@@ -240,7 +240,6 @@
         largeImages.forEach(img => {
             img.addEventListener('error', function() {
                 console.error('❌ Resim yüklenemedi:', this.src);
-                console.error('Dosya adını kontrol edin: image/ klasöründe bu dosya var mı?');
             });
             img.addEventListener('load', function() {
                 console.log('✅ Resim yüklendi:', this.src);
