@@ -95,23 +95,12 @@
             border-style: solid; border-color: white transparent transparent transparent;
         }
         .speech-bubble.show { opacity: 1; visibility: visible; }
-        .usage-counter {
+        .api-status {
             position: absolute; top: 30px; right: 30px;
             background: rgba(0,0,0,0.5); color: white; padding: 8px 15px;
-            border-radius: 15px; font-size: 0.9em; z-index: 20;
+            border-radius: 15px; font-size: 0.85em; z-index: 20;
             backdrop-filter: blur(5px);
         }
-        .sound-toggle {
-            position: absolute; top: 30px; left: 30px;
-            font-size: 2em; cursor: pointer; z-index: 20;
-            background: rgba(255,255,255,0.25);
-            width: 50px; height: 50px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px); border: 2px solid rgba(255,255,255,0.5);
-            transition: all 0.3s;
-        }
-        .sound-toggle:hover { transform: scale(1.1); }
-        .sound-toggle.muted { opacity: 0.5; }
         @media (max-width: 650px) {
             .buttons-container { gap: 15px; bottom: 20px; }
             .character-btn { width: 75px; height: 75px; }
@@ -122,9 +111,8 @@
 </head>
 <body>
     <div class="background">
-        <div class="sound-toggle" id="soundToggle">🔊</div>
         <div class="mic-icon" id="micBtn">🎤</div>
-        <div class="usage-counter" id="usageCounter">Hazır!</div>
+        <div class="api-status" id="apiStatus">⚙️ Hazırlanıyor...</div>
         <div class="status-text" id="statusText"></div>
         <div class="speech-bubble" id="speechBubble"></div>
 
@@ -152,18 +140,17 @@
     </div>
 
     <script>
-        // ⚙️ API AYARLARI
+        // ⚙️ API AYARLARI - TIRNAK İÇİNDE!
         const FISH_API_KEY = 'sk-fish-bHCj5Oiy6cM6Y8v5hp14-5TrOxLDm74lDST3LG-Nzyc';
-        const GROQ_API_KEY = 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
+        const GROQ_API_KEY = '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';
         
         const VOICE_IDS = {
             'sirinbaba': '8ddd7f4580f44b979185b3e20c612612',
             'sirine': '56051e80b2064ca1ac1aca565ff69654',
             'gozluklu': '1d6c5ef2e9fb41749b42caa13d59c088',
-            'gargamel': null // Yarın eklenecek
+            'gargamel': null
         };
 
-        // Karakter kişilikleri (LLM prompt'ları)
         const CHARACTER_PROMPTS = {
             'sirinbaba': 'Sen Şirin Baba\'sın. Bilge, şefkatli, yaşlı bir şirinsin. Türkçe konuşuyorsun. Çocuklara nazik, bilgece ve cesaret verici cevaplar veriyorsun. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.',
             'sirine': 'Sen Şirine\'sin. Neşeli, tatlı, şefkatli bir şirinsin. Türkçe konuşuyorsun. Çocuklara neşeli, arkadaşça ve sevgi dolu cevaplar veriyorsun. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.',
@@ -183,61 +170,126 @@
         const statusText = document.getElementById('statusText');
         const largeImages = document.querySelectorAll('.character-img');
         const speechBubble = document.getElementById('speechBubble');
-        const usageCounter = document.getElementById('usageCounter');
-        const soundToggle = document.getElementById('soundToggle');
+        const apiStatus = document.getElementById('apiStatus');
 
         let currentCharacter = null;
         let isSpeaking = false;
-        let isMuted = false;
-        let conversationHistory = {}; // Her karakter için konuşma geçmişi
+        let conversationHistory = {};
+        let useFishAudio = true;
 
         // Resim yükleme kontrolleri
         largeImages.forEach(img => {
-            img.addEventListener('error', () => console.error('❌ Resim yüklenemedi:', img.src));
+            img.addEventListener('error', () => console.error(' Resim yüklenemedi:', img.src));
             img.addEventListener('load', () => console.log('✅ Resim yüklendi:', img.src));
         });
 
-        // Ses açma/kapama
-        soundToggle.addEventListener('click', () => {
-            isMuted = !isMuted;
-            soundToggle.textContent = isMuted ? '🔇' : '🔊';
-            soundToggle.classList.toggle('muted');
-        });
-
-        function activateCharacter(character) {
-            currentCharacter = character;
-            const btn = document.querySelector(`[data-character="${character}"]`);
+        // Web Speech API (Fallback)
+        function speakWithBrowser(text, character) {
+            if (!window.speechSynthesis) {
+                console.warn('Tarayıcı ses sentezini desteklemiyor');
+                return;
+            }
             
-            buttons.forEach(b => b.classList.remove('active'));
-            if (btn) {
-                btn.classList.add('active');
-                setTimeout(() => btn.classList.remove('active'), 1500);
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'tr-TR';
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            
+            // Karakterlere göre ses ayarı
+            if (character === 'sirinbaba') {
+                utterance.pitch = 0.7;
+                utterance.rate = 0.9;
+            } else if (character === 'sirine') {
+                utterance.pitch = 1.3;
+                utterance.rate = 1.1;
+            } else if (character === 'gozluklu') {
+                utterance.pitch = 1.1;
+                utterance.rate = 1.2;
+            } else if (character === 'gargamel') {
+                utterance.pitch = 0.5;
+                utterance.rate = 0.8;
+            }
+            
+            utterance.onstart = () => {
+                isSpeaking = true;
+                apiStatus.textContent = '🔊 Konuşuyor...';
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                apiStatus.textContent = '✅ Hazır';
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Fish.audio API ile ses üret
+        async function speakWithFishAudio(text, character) {
+            if (!VOICE_IDS[character]) {
+                console.warn('Voice ID yok, browser TTS kullanılıyor');
+                speakWithBrowser(text, character);
+                return;
             }
 
-            largeImages.forEach(img => img.classList.remove('active'));
-            const activeImg = document.getElementById(`img-${character}`);
-            if (activeImg) {
-                setTimeout(() => activeImg.classList.add('active'), 50);
-            }
+            try {
+                const response = await fetch('https://api.fish.audio/v1/tts', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${FISH_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        format: 'mp3_44100_128',
+                        reference_id: VOICE_IDS[character]
+                    })
+                });
 
-            // Konuşma geçmişini başlat
-            if (!conversationHistory[character]) {
-                conversationHistory[character] = [
-                    { role: 'system', content: CHARACTER_PROMPTS[character] }
-                ];
-            }
+                if (!response.ok) {
+                    throw new Error(`Fish API Hatası: ${response.status}`);
+                }
 
-            showStatus(`${CHARACTER_NAMES[character]} hazır!`);
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.oncanplaythrough = () => {
+                    audio.play();
+                };
+                
+                audio.onended = () => {
+                    isSpeaking = false;
+                    apiStatus.textContent = '✅ Hazır';
+                    URL.revokeObjectURL(audioUrl);
+                };
+
+                audio.onerror = () => {
+                    console.warn('Fish.audio çalınamadı, browser TTS kullanılıyor');
+                    isSpeaking = false;
+                    speakWithBrowser(text, character);
+                };
+
+                isSpeaking = true;
+                apiStatus.textContent = '🎙️ Konuşuyor...';
+                audio.load();
+
+            } catch (error) {
+                console.warn('Fish.audio hatası, browser TTS kullanılıyor:', error.message);
+                speakWithBrowser(text, character);
+            }
         }
 
         // Groq API ile cevap üret
         async function generateResponse(character, userMessage) {
-            if (GROQ_API_KEY === 'BURAYA_GROQ_API_KEY_YAPISTIR') {
-                return 'Merhaba! Groq API key\'ini eklemeyi unutma. console.groq.com adresinden ücretsiz alabilirsin.';
-            }
-
             try {
-                // Geçmişe kullanıcı mesajını ekle
+                if (!conversationHistory[character]) {
+                    conversationHistory[character] = [
+                        { role: 'system', content: CHARACTER_PROMPTS[character] }
+                    ];
+                }
+
                 conversationHistory[character].push({ role: 'user', content: userMessage });
 
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -255,15 +307,17 @@
                 });
 
                 const data = await response.json();
-                const assistantMessage = data.choices[0].message.content;
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
 
-                // Geçmişe asistan mesajını ekle
+                const assistantMessage = data.choices[0].message.content;
                 conversationHistory[character].push({ role: 'assistant', content: assistantMessage });
 
-                // Geçmiş çok uzunsa kısalt (son 10 mesaj)
                 if (conversationHistory[character].length > 11) {
                     conversationHistory[character] = [
-                        conversationHistory[character][0], // system prompt
+                        conversationHistory[character][0],
                         ...conversationHistory[character].slice(-10)
                     ];
                 }
@@ -275,60 +329,29 @@
             }
         }
 
-        // Fish.audio API ile ses üret
-        async function speakWithFishAudio(character, text) {
-            if (isMuted) return;
-            if (!VOICE_IDS[character]) {
-                showStatus('⚠️ Bu karakterin sesi henüz eklenmedi!');
-                return;
+        function activateCharacter(character) {
+            currentCharacter = character;
+            const btn = document.querySelector(`[data-character="${character}"]`);
+            
+            buttons.forEach(b => b.classList.remove('active'));
+            if (btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), 1500);
             }
 
-            isSpeaking = true;
-            usageCounter.textContent = '🎙️ Konuşuyor...';
-
-            try {
-                const response = await fetch('https://fish.audio/api/v1/tts', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${FISH_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        format: 'mp3_44100_128',
-                        reference_id: VOICE_IDS[character],
-                        latency: 'balanced'
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Fish API Hatası: ${response.status}`);
-                }
-
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                
-                audio.play();
-                
-                audio.onended = () => {
-                    isSpeaking = false;
-                    usageCounter.textContent = 'Hazır!';
-                    URL.revokeObjectURL(audioUrl);
-                };
-
-                audio.onerror = () => {
-                    isSpeaking = false;
-                    usageCounter.textContent = 'Hazır!';
-                    showStatus('❌ Ses çalınamadı!');
-                };
-
-            } catch (error) {
-                console.error('TTS Hatası:', error);
-                isSpeaking = false;
-                usageCounter.textContent = 'Hazır!';
-                showStatus('❌ Ses üretilemedi: ' + error.message);
+            largeImages.forEach(img => img.classList.remove('active'));
+            const activeImg = document.getElementById(`img-${character}`);
+            if (activeImg) {
+                setTimeout(() => activeImg.classList.add('active'), 50);
             }
+
+            if (!conversationHistory[character]) {
+                conversationHistory[character] = [
+                    { role: 'system', content: CHARACTER_PROMPTS[character] }
+                ];
+            }
+
+            showStatus(`${CHARACTER_NAMES[character]} hazır!`);
         }
 
         function showSpeechBubble(text) {
@@ -343,7 +366,6 @@
             setTimeout(() => statusText.classList.remove('show'), 2500);
         }
 
-        // Ana fonksiyon: Karaktere soru sor
         async function askCharacter(character, question) {
             if (!currentCharacter) {
                 showStatus('Önce bir karakter seç!');
@@ -352,31 +374,24 @@
 
             activateCharacter(character);
             showStatus('🤔 Düşünüyor...');
+            apiStatus.textContent = '🤔 Düşünüyor...';
 
-            // 1. LLM'den cevap al
             const response = await generateResponse(character, question);
             
-            // 2. Konuşma balonunda göster
             showSpeechBubble(response);
-            showStatus('️ Konuşuyor...');
+            showStatus('🔊 Konuşuyor...');
 
-            // 3. Ses üret ve çal
-            await speakWithFishAudio(character, response);
+            await speakWithFishAudio(response, character);
         }
 
-        // Buton tıklamaları - Karakter seç ve selam ver
+        // Buton tıklamaları
         buttons.forEach(btn => {
             btn.addEventListener('click', async () => {
                 const character = btn.dataset.character;
-                if (!VOICE_IDS[character]) {
-                    showStatus('⚠️ Bu karakterin sesi henüz eklenmedi!');
-                    return;
-                }
-                
                 activateCharacter(character);
                 showStatus('🤔 Düşünüyor...');
+                apiStatus.textContent = ' Düşünüyor...';
                 
-                // İlk selam
                 const greetings = {
                     'sirinbaba': 'Merhaba küçük şirin! Ben Şirin Baba. Sana nasıl yardımcı olabilirim?',
                     'sirine': 'Selam! Ben Şirine! Seninle tanışmak çok güzel!',
@@ -386,11 +401,11 @@
                 
                 const greeting = greetings[character];
                 showSpeechBubble(greeting);
-                await speakWithFishAudio(character, greeting);
+                await speakWithFishAudio(greeting, character);
             });
         });
 
-        // Sesli komut sistemi
+        // Sesli komut
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
@@ -414,9 +429,7 @@
             recognition.onresult = async (event) => {
                 const transcript = event.results[0][0].transcript;
                 micBtn.classList.remove('listening');
-                showStatus(` "${transcript}"`);
-                
-                // Seçili karaktere soruyu ilet
+                showStatus(`📝 "${transcript}"`);
                 await askCharacter(currentCharacter, transcript);
             };
 
@@ -428,8 +441,14 @@
             recognition.onend = () => micBtn.classList.remove('listening');
         } else {
             micBtn.style.display = 'none';
-            showStatus('Tarayıcın ses tanımayı desteklemiyor');
         }
+
+        // Başlangıç durumu
+        apiStatus.textContent = '✅ Hazır';
+        console.log('✅ Sayfa yüklendi! API Key\'ler:', {
+            Fish: FISH_API_KEY ? '✓ Var' : '✗ Yok',
+            Groq: GROQ_API_KEY ? '✓ Var' : '✗ Yok'
+        });
     </script>
 </body>
 </html>
