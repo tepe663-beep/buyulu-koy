@@ -33,7 +33,7 @@ body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif}
 <div class="status" id="status"></div>
 <div class="character-display-container">
 <img src="image/sirinbababuyuk.png" id="img-sirinbaba" class="character-img">
-<img src="image/sirinebuyuk.png" id="img-sirine" class="character-img">
+<img src="image/sıirenebuyuk.png" id="img-sirine" class="character-img">
 <img src="image/gozluklubuyuk.png" id="img-gozluklu" class="character-img">
 <img src="image/gargamelbuyuk.png" id="img-gargamel" class="character-img">
 </div>
@@ -55,7 +55,6 @@ var history={};
 
 function show(txt){var s=document.getElementById('status');s.textContent=txt;s.classList.add('show');setTimeout(function(){s.classList.remove('show')},2500)}
 
-// Fish.audio yerine browser TTS kullan (CORS sorunu yok)
 function speakBrowser(text,char){
 if(!window.speechSynthesis){show('Tarayici ses desteklemiyor');return}
 window.speechSynthesis.cancel();
@@ -70,26 +69,14 @@ u.onend=function(){document.getElementById('apiStatus').textContent='Hazir'}
 window.speechSynthesis.speak(u)
 }
 
-// Fish.audio API - CORS proxy ile dene
 async function speakFish(text,char){
 if(!VOICES[char]){speakBrowser(text,char);return}
 try{
 document.getElementById('apiStatus').textContent='Fish API deneniyor...';
-// CORS proxy kullanarak dene
 var proxyUrl='https://api.allorigins.win/raw?url=';
 var targetUrl='https://fish.audio/api/v1/tts';
 var finalUrl=proxyUrl+encodeURIComponent(targetUrl);
-
-var r=await fetch(finalUrl,{
-method:'POST',
-headers:{
-'Authorization':'Bearer '+FISH_KEY,
-'Content-Type':'application/json',
-'Origins':'*'
-},
-body:JSON.stringify({text:text,format:'mp3_44100_128',model_id:VOICES[char]})
-});
-
+var r=await fetch(finalUrl,{method:'POST',headers:{'Authorization':'Bearer '+FISH_KEY,'Content-Type':'application/json','Origins':'*'},body:JSON.stringify({text:text,format:'mp3_44100_128',model_id:VOICES[char]})});
 if(!r.ok)throw new Error('API hatasi: '+r.status);
 var blob=await r.blob();
 if(blob.size<100)throw new Error('Bos ses');
@@ -109,11 +96,7 @@ async function ask(char,question){
 if(!history[char])history[char]=[{role:'system',content:PROMPTS[char]}];
 history[char].push({role:'user',content:question});
 try{
-var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-method:'POST',
-headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
-body:JSON.stringify({model:'llama-3.1-8b-instant',messages:history[char],max_tokens:150})
-});
+var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.1-8b-instant',messages:history[char],max_tokens:150})});
 var data=await r.json();
 var reply=data.choices[0].message.content;
 history[char].push({role:'assistant',content:reply});
@@ -133,12 +116,8 @@ btn.classList.add('active');
 setTimeout(function(){btn.classList.remove('active')},1500);
 document.querySelectorAll('.character-img').forEach(function(img){img.classList.remove('active')});
 var img=document.getElementById('img-'+c);
-if(img){
-img.classList.add('active');
-console.log(c+' gorseli aktif');
-}else{
-console.error(c+' gorseli bulunamadi!');
-}
+if(img){img.classList.add('active');console.log(c+' gorseli aktif')}
+else{console.error(c+' gorseli bulunamadi!')}
 if(!history[c])history[c]=[{role:'system',content:PROMPTS[c]}];
 show(NAMES[c]+' hazir!');
 document.getElementById('apiStatus').textContent='Dusunuyor...';
@@ -152,23 +131,18 @@ var rec=new webkitSpeechRecognition();
 rec.lang='tr-TR';
 document.getElementById('micBtn').onclick=function(){
 if(!currentChar){show('Once karakter sec');return}
-rec.start();
-this.classList.add('listening');
-show('Dinliyorum...')
+rec.start();this.classList.add('listening');show('Dinliyorum...')
 };
 rec.onresult=function(e){
 var txt=e.results[0][0].transcript;
 document.getElementById('micBtn').classList.remove('listening');
-show(txt);
-ask(currentChar,txt)
+show(txt);ask(currentChar,txt)
 };
 rec.onerror=function(){document.getElementById('micBtn').classList.remove('listening')}
-}else{
-document.getElementById('micBtn').style.display='none'
-}
+}else{document.getElementById('micBtn').style.display='none'}
 
 document.getElementById('apiStatus').textContent='Hazir (Browser TTS)';
-console.log('Yuklendi. Resimler:',{sirinbaba:'image/sirinbababuyuk.png',sirine:'image/sirinebuyuk.png',gozluklu:'image/gozluklubuyuk.png'});
+console.log('Yuklendi. Resimler:',{sirinbaba:'image/sirinbababuyuk.png',sirine:'image/sıirenebuyuk.png',gozluklu:'image/gozluklubuyuk.png'});
 </script>
 </body>
 </html>
