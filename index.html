@@ -1,454 +1,85 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şirinler Canlı Yapay Zeka Sohbeti</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { width: 100vw; height: 100vh; overflow: hidden; font-family: 'Arial', sans-serif; }
-        .background {
-            width: 100%; height: 100%;
-            background: url('image/background.png') no-repeat center center;
-            background-size: cover; position: relative;
-        }
-        .mic-icon {
-            position: absolute; top: 30px; left: 50%;
-            transform: translateX(-50%); font-size: 3em; cursor: pointer; z-index: 20;
-            transition: all 0.3s; background: rgba(255,255,255,0.25);
-            width: 70px; height: 70px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 3px solid rgba(255,255,255,0.5);
-        }
-        .mic-icon:hover { transform: translateX(-50%) scale(1.15); background: rgba(255,255,255,0.35); }
-        .mic-icon.listening { animation: pulse 1s infinite; background: rgba(255,80,80,0.5); }
-        @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.3); }
-        }
-        .character-display-container {
-            position: absolute; top: 45%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%; height: 70vh;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 5; pointer-events: none;
-        }
-        .character-img {
-            position: absolute; max-height: 70vh; max-width: 90vw;
-            opacity: 0; visibility: hidden; transform: scale(0.5);
-            transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
-        }
-        .character-img.active {
-            opacity: 1; visibility: visible; transform: scale(1);
-            animation: danceTalk 2s infinite ease-in-out;
-        }
-        @keyframes danceTalk {
-            0% { transform: translateY(0) scale(1) rotate(0deg); }
-            25% { transform: translateY(-20px) scale(1.04) rotate(-4deg); }
-            50% { transform: translateY(0) scale(0.96) rotate(0deg); }
-            75% { transform: translateY(-15px) scale(1.03) rotate(4deg); }
-            100% { transform: translateY(0) scale(1) rotate(0deg); }
-        }
-        .buttons-container {
-            position: absolute; bottom: 40px; left: 50%;
-            transform: translateX(-50%); display: flex; gap: 25px;
-            z-index: 10; flex-wrap: wrap; justify-content: center; padding: 0 20px;
-        }
-        .character-btn {
-            width: 100px; height: 100px; border-radius: 50%; border: none;
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
-            position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            background: transparent; padding: 0;
-        }
-        .character-btn:hover { transform: translateY(-10px) scale(1.08); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .character-btn.active {
-            animation: popOut 0.6s ease; transform: scale(1.2) translateY(-10px);
-            box-shadow: 0 15px 40px rgba(255,215,0,0.6); z-index: 100;
-        }
-        @keyframes popOut {
-            0% { transform: scale(1) translateY(0); }
-            40% { transform: scale(1.4) translateY(-20px); }
-            100% { transform: scale(1.2) translateY(-10px); }
-        }
-        .character-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-        .status-text {
-            position: absolute; top: 120px; left: 50%;
-            transform: translateX(-50%); color: white; font-size: 1.3em; font-weight: bold;
-            text-shadow: 2px 2px 6px rgba(0,0,0,0.5); z-index: 20; opacity: 0;
-            transition: opacity 0.3s; background: rgba(0,0,0,0.35);
-            padding: 12px 24px; border-radius: 25px; white-space: nowrap; backdrop-filter: blur(5px);
-        }
-        .status-text.show { opacity: 1; }
-        .speech-bubble {
-            position: absolute; top: 18%; left: 50%;
-            transform: translateX(-50%); background: white; color: #333;
-            padding: 20px 30px; border-radius: 20px; font-size: 1.2em; font-weight: bold;
-            max-width: 80%; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
-            z-index: 15; line-height: 1.4;
-        }
-        .speech-bubble::after {
-            content: ''; position: absolute; bottom: -10px; left: 50%;
-            transform: translateX(-50%); border-width: 10px 10px 0;
-            border-style: solid; border-color: white transparent transparent transparent;
-        }
-        .speech-bubble.show { opacity: 1; visibility: visible; }
-        .api-status {
-            position: absolute; top: 30px; right: 30px;
-            background: rgba(0,0,0,0.5); color: white; padding: 8px 15px;
-            border-radius: 15px; font-size: 0.85em; z-index: 20;
-            backdrop-filter: blur(5px);
-        }
-        @media (max-width: 650px) {
-            .buttons-container { gap: 15px; bottom: 20px; }
-            .character-btn { width: 75px; height: 75px; }
-            .character-img { max-height: 55vh; }
-            .speech-bubble { font-size: 1em; padding: 15px 20px; top: 15%; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sirinler AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:100vw;height:100vh;overflow:hidden;font-family:Arial,sans-serif}
+.background{width:100%;height:100%;background:url('image/background.png') no-repeat center center;background-size:cover;position:relative}
+.mic-icon{position:absolute;top:30px;left:50%;transform:translateX(-50%);font-size:3em;cursor:pointer;z-index:20;background:rgba(255,255,255,0.25);width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.5)}
+.mic-icon.listening{background:rgba(255,80,80,0.5);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.3)}}
+.character-display-container{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);width:100%;height:70vh;display:flex;align-items:center;justify-content:center;z-index:5;pointer-events:none}
+.character-img{position:absolute;max-height:70vh;max-width:90vw;opacity:0;visibility:hidden;transform:scale(0.5);transition:opacity 0.5s ease,transform 0.5s ease,visibility 0.5s;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.4))}
+.character-img.active{opacity:1;visibility:visible;transform:scale(1);animation:danceTalk 2s infinite ease-in-out}
+@keyframes danceTalk{0%{transform:translateY(0) scale(1) rotate(0deg)}25%{transform:translateY(-20px) scale(1.04) rotate(-4deg)}50%{transform:translateY(0) scale(0.96) rotate(0deg)}75%{transform:translateY(-15px) scale(1.03) rotate(4deg)}100%{transform:translateY(0) scale(1) rotate(0deg)}}
+.buttons-container{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:25px;z-index:10;flex-wrap:wrap;justify-content:center;padding:0 20px}
+.character-btn{width:100px;height:100px;border-radius:50%;border:none;cursor:pointer;transition:all 0.4s;box-shadow:0 6px 20px rgba(0,0,0,0.3);background:transparent;padding:0}
+.character-btn:hover{transform:translateY(-10px) scale(1.08)}
+.character-btn.active{animation:popOut 0.6s ease;transform:scale(1.2) translateY(-10px);box-shadow:0 15px 40px rgba(255,215,0,0.6);z-index:100}
+@keyframes popOut{0%{transform:scale(1) translateY(0)}40%{transform:scale(1.4) translateY(-20px)}100%{transform:scale(1.2) translateY(-10px)}}
+.character-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.status-text{position:absolute;top:120px;left:50%;transform:translateX(-50%);color:white;font-size:1.3em;font-weight:bold;text-shadow:2px 2px 6px rgba(0,0,0,0.5);z-index:20;opacity:0;transition:opacity 0.3s;background:rgba(0,0,0,0.35);padding:12px 24px;border-radius:25px;backdrop-filter:blur(5px)}
+.status-text.show{opacity:1}
+.api-status{position:absolute;top:30px;right:30px;background:rgba(0,0,0,0.5);color:white;padding:8px 15px;border-radius:15px;font-size:0.85em;z-index:20;backdrop-filter:blur(5px)}
+@media(max-width:650px){.buttons-container{gap:15px;bottom:20px}.character-btn{width:75px;height:75px}.character-img{max-height:55vh}}
+</style>
 </head>
 <body>
-    <div class="background">
-        <div class="mic-icon" id="micBtn">🎤</div>
-        <div class="api-status" id="apiStatus">⚙️ Hazırlanıyor...</div>
-        <div class="status-text" id="statusText"></div>
-        <div class="speech-bubble" id="speechBubble"></div>
+<div class="background">
+<div class="mic-icon" id="micBtn">🎤</div>
+<div class="api-status" id="apiStatus">Hazirlaniyor...</div>
+<div class="status-text" id="statusText"></div>
+<div class="character-display-container">
+<img src="image/sirinbababuyuk.png" class="character-img" id="img-sirinbaba">
+<img src="image/sirinebuyuk.png" class="character-img" id="img-sirine">
+<img src="image/gozluklubuyuk.png" class="character-img" id="img-gozluklu">
+<img src="image/gargamelbuyuk.png" class="character-img" id="img-gargamel">
+</div>
+<div class="buttons-container">
+<div class="character-btn" data-character="sirinbaba"><img src="image/sirinbababuton.png"></div>
+<div class="character-btn" data-character="sirine"><img src="image/sirinebuton.png"></div>
+<div class="character-btn" data-character="gozluklu"><img src="image/gozluklubuton.png"></div>
+<div class="character-btn" data-character="gargamel"><img src="image/gargamelbuton.png"></div>
+</div>
+</div>
+<script>
+var FISH_API_KEY='sk-fish-bHCj5Oiy6cM6Y8v5hp14-5TrOxLDm74lDST3LG-Nzyc';
+var GROQ_API_KEY='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';
+var VOICE_IDS={sirinbaba:'8ddd7f4580f44b979185b3e20c612612',sirine:'56051e80b2064ca1ac1aca565ff69654',gozluklu:'1d6c5ef2e9fb41749b42caa13d59c088',gargamel:null};
+var CHARACTER_PROMPTS={sirinbaba:'Sen Sirin Baba\'sin. Bilge, sefkatli, yasli bir sirinsin. Turkce konusuyorsun. Cocuklara nazik, bilgece ve cesaret verici cevaplar veriyorsun. Cevaplarin kisa olsun (maksimum 2-3 cumle).',sirine:'Sen Sirine\'sin. Neseli, tatli, sefkatli bir sirinsin. Turkce konusuyorsun. Cocuklara neseli, arkadasca ve sevgi dolu cevaplar veriyorsun. Cevaplarin kisa olsun.',gozluklu:'Sen Gozluklu Sirin\'sin. Zeki, bilgili, biraz havali bir sirinsin. Turkce konusuyorsun. Cocuklara ilginç bilgiler ve akillica cevaplar veriyorsun. Cevaplarin kisa olsun.',gargamel:'Sen Gargamel\'sin. Huysuz, kotu niyetli ama komik bir buyucusun. Turkce konusuyorsun. Cocuklara huysuz ama eglenceli cevaplar veriyorsun. Cevaplarin kisa olsun.'};
+var CHARACTER_NAMES={sirinbaba:'Sirin Baba',sirine:'Sirine',gozluklu:'Gozluklu',gargamel:'Gargamel'};
+var buttons=document.querySelectorAll('.character-btn');
+var micBtn=document.getElementById('micBtn');
+var statusText=document.getElementById('statusText');
+var apiStatus=document.getElementById('apiStatus');
+var largeImages=document.querySelectorAll('.character-img');
+var currentCharacter=null;
+var isSpeaking=false;
+var conversationHistory={};
 
-        <div class="character-display-container">
-            <img src="image/sirinbababuyuk.png" alt="Şirin Baba" class="character-img" id="img-sirinbaba">
-            <img src="image/sıirinebuyuk.png" alt="Şirine" class="character-img" id="img-sirine">
-            <img src="image/gozluklubuyuk.png" alt="Gözlüklü" class="character-img" id="img-gozluklu">
-            <img src="image/gargamelbuyuk.png" alt="Gargamel" class="character-img" id="img-gargamel">
-        </div>
+largeImages.forEach(function(img){img.addEventListener('error',function(){console.log('Resim yuklenemedi: '+img.src)});img.addEventListener('load',function(){console.log('Resim yuklendi: '+img.src)})});
 
-        <div class="buttons-container">
-            <div class="character-btn" data-character="sirinbaba">
-                <img src="image/sirinbababuton.png" alt="Şirin Baba">
-            </div>
-            <div class="character-btn" data-character="sirine">
-                <img src="image/sirinebuton.png" alt="Şirine">
-            </div>
-            <div class="character-btn" data-character="gozluklu">
-                <img src="image/gozluklubuton.png" alt="Gözlüklü">
-            </div>
-            <div class="character-btn" data-character="gargamel">
-                <img src="image/gargamelbuton.png" alt="Gargamel">
-            </div>
-        </div>
-    </div>
+function showStatus(text){statusText.textContent=text;statusText.classList.add('show');setTimeout(function(){statusText.classList.remove('show')},2500)}
 
-    <script>
-        // ⚙️ API AYARLARI - TIRNAK İÇİNDE!
-        const FISH_API_KEY = 'sk-fish-bHCj5Oiy6cM6Y8v5hp14-5TrOxLDm74lDST3LG-Nzyc';
-        const GROQ_API_KEY = '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';
-        
-        const VOICE_IDS = {
-            'sirinbaba': '8ddd7f4580f44b979185b3e20c612612',
-            'sirine': '56051e80b2064ca1ac1aca565ff69654',
-            'gozluklu': '1d6c5ef2e9fb41749b42caa13d59c088',
-            'gargamel': null
-        };
+function speakWithBrowser(text,character){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var utterance=new SpeechSynthesisUtterance(text);utterance.lang='tr-TR';if(character==='sirinbaba'){utterance.pitch=0.7;utterance.rate=0.9}else if(character==='sirine'){utterance.pitch=1.3;utterance.rate=1.1}else if(character==='gozluklu'){utterance.pitch=1.1;utterance.rate=1.2}else if(character==='gargamel'){utterance.pitch=0.5;utterance.rate=0.8}utterance.onstart=function(){isSpeaking=true;apiStatus.textContent='Konusuyor (Browser)...'};utterance.onend=function(){isSpeaking=false;apiStatus.textContent='Hazir'};window.speechSynthesis.speak(utterance)}
 
-        const CHARACTER_PROMPTS = {
-            'sirinbaba': 'Sen Şirin Baba\'sın. Bilge, şefkatli, yaşlı bir şirinsin. Türkçe konuşuyorsun. Çocuklara nazik, bilgece ve cesaret verici cevaplar veriyorsun. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.',
-            'sirine': 'Sen Şirine\'sin. Neşeli, tatlı, şefkatli bir şirinsin. Türkçe konuşuyorsun. Çocuklara neşeli, arkadaşça ve sevgi dolu cevaplar veriyorsun. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.',
-            'gozluklu': 'Sen Gözlüklü Şirin\'sin. Zeki, bilgili, biraz havalı bir şirinsin. Türkçe konuşuyorsun. Çocuklara ilginç bilgiler ve akıllıca cevaplar veriyorsun. Bazen "Aslında..." diye başlayabilirsin. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.',
-            'gargamel': 'Sen Gargamel\'sin. Huysuz, kötü niyetli ama komik bir büyücüsün. Türkçe konuşuyorsun. Çocuklara huysuz ama eğlenceli cevaplar veriyorsun. Şirinlerden bahsetmeyi seversin. Cevapların kısa olsun (maksimum 2-3 cümle). Asla "yapay zeka" veya "model" kelimesini kullanma.'
-        };
+async function speakWithFishAudio(text,character){if(!VOICE_IDS[character]){console.log('Voice ID yok, browser TTS');speakWithBrowser(text,character);return}try{apiStatus.textContent='Ses uretiliyor...';console.log('Fish.audio cagriliyor:',{character:character,modelId:VOICE_IDS[character]});var response=await fetch('https://fish.audio/api/v1/tts',{method:'POST',headers:{'Authorization':'Bearer '+FISH_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({text:text,format:'mp3_44100_128',model_id:VOICE_IDS[character]})});if(!response.ok){var errorText=await response.text();throw new Error('Fish API Hatasi: '+response.status+' - '+errorText)}var audioBlob=await response.blob();console.log('Ses blob boyutu:',audioBlob.size,'bytes');if(audioBlob.size<1000)throw new Error('Ses dosyasi cok kucuk');var audioUrl=URL.createObjectURL(audioBlob);var audio=new Audio(audioUrl);audio.oncanplaythrough=function(){console.log('Ses calinmaya hazir');audio.play().catch(function(e){console.error('Play hatasi:',e)})};audio.onended=function(){isSpeaking=false;apiStatus.textContent='Hazir';URL.revokeObjectURL(audioUrl)};audio.onerror=function(e){console.log('Fish.audio calinamadi, browser TTS:',e);isSpeaking=false;speakWithBrowser(text,character)};isSpeaking=true;audio.load()}catch(error){console.error('Fish.audio hatasi:',error.message);apiStatus.textContent='Fish.audio hatasi, browser TTS';speakWithBrowser(text,character)}}
 
-        const CHARACTER_NAMES = {
-            'sirinbaba': 'Şirin Baba',
-            'sirine': 'Şirine',
-            'gozluklu': 'Gözlüklü',
-            'gargamel': 'Gargamel'
-        };
+async function generateResponse(character,userMessage){try{if(!conversationHistory[character]){conversationHistory[character]=[{role:'system',content:CHARACTER_PROMPTS[character]}]}conversationHistory[character].push({role:'user',content:userMessage});var response=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+GROQ_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.1-8b-instant',messages:conversationHistory[character],max_tokens:150,temperature:0.7})});var data=await response.json();if(data.error)throw new Error(data.error.message);var assistantMessage=data.choices[0].message.content;conversationHistory[character].push({role:'assistant',content:assistantMessage});if(conversationHistory[character].length>11){conversationHistory[character]=[conversationHistory[character][0]].concat(conversationHistory[character].slice(-10))}return assistantMessage}catch(error){console.error('LLM Hatasi:',error);return'Uzgunum, su an cevap veremiyorum.'}}
 
-        const buttons = document.querySelectorAll('.character-btn');
-        const micBtn = document.getElementById('micBtn');
-        const statusText = document.getElementById('statusText');
-        const largeImages = document.querySelectorAll('.character-img');
-        const speechBubble = document.getElementById('speechBubble');
-        const apiStatus = document.getElementById('apiStatus');
+function activateCharacter(character){currentCharacter=character;buttons.forEach(function(b){b.classList.remove('active')});var btn=document.querySelector('[data-character="'+character+'"]');if(btn){btn.classList.add('active');setTimeout(function(){btn.classList.remove('active')},1500)}largeImages.forEach(function(img){img.classList.remove('active')});var activeImg=document.getElementById('img-'+character);if(activeImg){setTimeout(function(){activeImg.classList.add('active')},50)}if(!conversationHistory[character]){conversationHistory[character]=[{role:'system',content:CHARACTER_PROMPTS[character]}]}apiStatus.textContent=CHARACTER_NAMES[character]+' hazir!';setTimeout(function(){if(!isSpeaking)apiStatus.textContent='Hazir'},2000)}
 
-        let currentCharacter = null;
-        let isSpeaking = false;
-        let conversationHistory = {};
-        let useFishAudio = true;
+async function askCharacter(character,question){if(!currentCharacter){apiStatus.textContent='Once bir karakter sec!';return}activateCharacter(character);apiStatus.textContent='Dusunuyor...';var response=await generateResponse(character,question);console.log('LLM Cevabi:',response);apiStatus.textContent='Konusuyor...';await speakWithFishAudio(response,character)}
 
-        // Resim yükleme kontrolleri
-        largeImages.forEach(img => {
-            img.addEventListener('error', () => console.error(' Resim yüklenemedi:', img.src));
-            img.addEventListener('load', () => console.log('✅ Resim yüklendi:', img.src));
-        });
+buttons.forEach(function(btn){btn.addEventListener('click',async function(){var character=btn.getAttribute('data-character');activateCharacter(character);apiStatus.textContent='Dusunuyor...';var greetings={sirinbaba:'Merhaba kucuk sirin! Ben Sirin Baba. Sana nasil yardimci olabilirim?',sirine:'Selam! Ben Sirine! Seninle tanismak cok guzel!',gozluklu:'Merhaba! Ben Gozluklu Sirin. Sana ilginç bilgiler anlatabilirim!',gargamel:'Kahkahaa! Ben Gargamel! Ne istiyorsun?'};var greeting=greetings[character];await speakWithFishAudio(greeting,character)})});
 
-        // Web Speech API (Fallback)
-        function speakWithBrowser(text, character) {
-            if (!window.speechSynthesis) {
-                console.warn('Tarayıcı ses sentezini desteklemiyor');
-                return;
-            }
-            
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR';
-            utterance.rate = 1;
-            utterance.pitch = 1;
-            
-            // Karakterlere göre ses ayarı
-            if (character === 'sirinbaba') {
-                utterance.pitch = 0.7;
-                utterance.rate = 0.9;
-            } else if (character === 'sirine') {
-                utterance.pitch = 1.3;
-                utterance.rate = 1.1;
-            } else if (character === 'gozluklu') {
-                utterance.pitch = 1.1;
-                utterance.rate = 1.2;
-            } else if (character === 'gargamel') {
-                utterance.pitch = 0.5;
-                utterance.rate = 0.8;
-            }
-            
-            utterance.onstart = () => {
-                isSpeaking = true;
-                apiStatus.textContent = '🔊 Konuşuyor...';
-            };
-            
-            utterance.onend = () => {
-                isSpeaking = false;
-                apiStatus.textContent = '✅ Hazır';
-            };
-            
-            window.speechSynthesis.speak(utterance);
-        }
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){var SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;var recognition=new SpeechRecognition();recognition.lang='tr-TR';micBtn.addEventListener('click',function(){if(!currentCharacter){apiStatus.textContent='Once bir karakter sec!';return}try{recognition.start();micBtn.classList.add('listening');apiStatus.textContent='Dinliyorum...'}catch(e){console.log(e)}});recognition.onresult=async function(event){var transcript=event.results[0][0].transcript;micBtn.classList.remove('listening');console.log('Sesli komut:',transcript);await askCharacter(currentCharacter,transcript)};recognition.onerror=function(event){micBtn.classList.remove('listening');if(event.error!=='no-speech')apiStatus.textContent='Ses hatasi: '+event.error};recognition.onend=function(){micBtn.classList.remove('listening')}}else{micBtn.style.display='none'}
 
-        // Fish.audio API ile ses üret
-        async function speakWithFishAudio(text, character) {
-            if (!VOICE_IDS[character]) {
-                console.warn('Voice ID yok, browser TTS kullanılıyor');
-                speakWithBrowser(text, character);
-                return;
-            }
-
-            try {
-                const response = await fetch('https://api.fish.audio/v1/tts', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${FISH_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        format: 'mp3_44100_128',
-                        reference_id: VOICE_IDS[character]
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Fish API Hatası: ${response.status}`);
-                }
-
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl);
-                
-                audio.oncanplaythrough = () => {
-                    audio.play();
-                };
-                
-                audio.onended = () => {
-                    isSpeaking = false;
-                    apiStatus.textContent = '✅ Hazır';
-                    URL.revokeObjectURL(audioUrl);
-                };
-
-                audio.onerror = () => {
-                    console.warn('Fish.audio çalınamadı, browser TTS kullanılıyor');
-                    isSpeaking = false;
-                    speakWithBrowser(text, character);
-                };
-
-                isSpeaking = true;
-                apiStatus.textContent = '🎙️ Konuşuyor...';
-                audio.load();
-
-            } catch (error) {
-                console.warn('Fish.audio hatası, browser TTS kullanılıyor:', error.message);
-                speakWithBrowser(text, character);
-            }
-        }
-
-        // Groq API ile cevap üret
-        async function generateResponse(character, userMessage) {
-            try {
-                if (!conversationHistory[character]) {
-                    conversationHistory[character] = [
-                        { role: 'system', content: CHARACTER_PROMPTS[character] }
-                    ];
-                }
-
-                conversationHistory[character].push({ role: 'user', content: userMessage });
-
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'llama-3.1-8b-instant',
-                        messages: conversationHistory[character],
-                        max_tokens: 150,
-                        temperature: 0.7
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                const assistantMessage = data.choices[0].message.content;
-                conversationHistory[character].push({ role: 'assistant', content: assistantMessage });
-
-                if (conversationHistory[character].length > 11) {
-                    conversationHistory[character] = [
-                        conversationHistory[character][0],
-                        ...conversationHistory[character].slice(-10)
-                    ];
-                }
-
-                return assistantMessage;
-            } catch (error) {
-                console.error('LLM Hatası:', error);
-                return 'Üzgünüm, şu an cevap veremiyorum. Lütfen tekrar dene!';
-            }
-        }
-
-        function activateCharacter(character) {
-            currentCharacter = character;
-            const btn = document.querySelector(`[data-character="${character}"]`);
-            
-            buttons.forEach(b => b.classList.remove('active'));
-            if (btn) {
-                btn.classList.add('active');
-                setTimeout(() => btn.classList.remove('active'), 1500);
-            }
-
-            largeImages.forEach(img => img.classList.remove('active'));
-            const activeImg = document.getElementById(`img-${character}`);
-            if (activeImg) {
-                setTimeout(() => activeImg.classList.add('active'), 50);
-            }
-
-            if (!conversationHistory[character]) {
-                conversationHistory[character] = [
-                    { role: 'system', content: CHARACTER_PROMPTS[character] }
-                ];
-            }
-
-            showStatus(`${CHARACTER_NAMES[character]} hazır!`);
-        }
-
-        function showSpeechBubble(text) {
-            speechBubble.textContent = text;
-            speechBubble.classList.add('show');
-            setTimeout(() => speechBubble.classList.remove('show'), 6000);
-        }
-
-        function showStatus(text) {
-            statusText.textContent = text;
-            statusText.classList.add('show');
-            setTimeout(() => statusText.classList.remove('show'), 2500);
-        }
-
-        async function askCharacter(character, question) {
-            if (!currentCharacter) {
-                showStatus('Önce bir karakter seç!');
-                return;
-            }
-
-            activateCharacter(character);
-            showStatus('🤔 Düşünüyor...');
-            apiStatus.textContent = '🤔 Düşünüyor...';
-
-            const response = await generateResponse(character, question);
-            
-            showSpeechBubble(response);
-            showStatus('🔊 Konuşuyor...');
-
-            await speakWithFishAudio(response, character);
-        }
-
-        // Buton tıklamaları
-        buttons.forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const character = btn.dataset.character;
-                activateCharacter(character);
-                showStatus('🤔 Düşünüyor...');
-                apiStatus.textContent = ' Düşünüyor...';
-                
-                const greetings = {
-                    'sirinbaba': 'Merhaba küçük şirin! Ben Şirin Baba. Sana nasıl yardımcı olabilirim?',
-                    'sirine': 'Selam! Ben Şirine! Seninle tanışmak çok güzel!',
-                    'gozluklu': 'Merhaba! Ben Gözlüklü Şirin. Sana ilginç bilgiler anlatabilirim!',
-                    'gargamel': 'Kahkahaa! Ben Gargamel! Ne istiyorsun?'
-                };
-                
-                const greeting = greetings[character];
-                showSpeechBubble(greeting);
-                await speakWithFishAudio(greeting, character);
-            });
-        });
-
-        // Sesli komut
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            
-            recognition.lang = 'tr-TR';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            micBtn.addEventListener('click', () => {
-                if (!currentCharacter) {
-                    showStatus('Önce bir karakter seç!');
-                    return;
-                }
-                try {
-                    recognition.start();
-                    micBtn.classList.add('listening');
-                    showStatus('🎙️ Dinliyorum...');
-                } catch(e) { console.log('Hata:', e); }
-            });
-
-            recognition.onresult = async (event) => {
-                const transcript = event.results[0][0].transcript;
-                micBtn.classList.remove('listening');
-                showStatus(`📝 "${transcript}"`);
-                await askCharacter(currentCharacter, transcript);
-            };
-
-            recognition.onerror = (event) => {
-                micBtn.classList.remove('listening');
-                if (event.error !== 'no-speech') showStatus('Ses hatası: ' + event.error);
-            };
-
-            recognition.onend = () => micBtn.classList.remove('listening');
-        } else {
-            micBtn.style.display = 'none';
-        }
-
-        // Başlangıç durumu
-        apiStatus.textContent = '✅ Hazır';
-        console.log('✅ Sayfa yüklendi! API Key\'ler:', {
-            Fish: FISH_API_KEY ? '✓ Var' : '✗ Yok',
-            Groq: GROQ_API_KEY ? '✓ Var' : '✗ Yok'
-        });
-    </script>
+apiStatus.textContent='Hazir';
+console.log('Sayfa yuklendi! Voice IDs:',VOICE_IDS);
+</script>
 </body>
 </html>
